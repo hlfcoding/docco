@@ -11,3 +11,22 @@ Docco is a quick-and-dirty, hundred-line-long, literate-programming-style
 documentation generator. For more information, see:
 
 http://jashkenas.github.com/docco/
+
+---
+
+Sample bash script to traverse a hierarchy of js src and flatten it into a docs folder in the app root.
+
+  # Run from project root
+  function fd {
+    app_root="Sites/xx"
+    js_root="$app_root/xx"
+    cd ~/$js_root
+    docco *.js
+    list="xx xx xx xx"
+    for dir in $list;
+    do 
+      find $dir -name "*.js" -print0 | xargs -0 docco
+    done
+    mv ~/$js_root/docs/*.html ~/$app_root/docs/
+    rm -r -f ~/$js_root/docs
+  }
