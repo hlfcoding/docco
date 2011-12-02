@@ -1,4 +1,5 @@
 @import "../vendor/hlf-framework.scss";
+
 ///*--------------------- Palette ----------------------------------------*/
 $text-color: #252519;
 $link-color: #261a3b;
@@ -10,6 +11,7 @@ $gutter-size: 15px;
 $ui-gutter-size: 5px;
 $page-gutter-size: 0.5%;
 $prose-width: 525px;
+
 /*--------------------- Utility Classes ----------------------------------*/
 .prose-text {
   font: {
