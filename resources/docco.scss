@@ -52,7 +52,24 @@ h1, h2, h3, h4, h5, h6 {
   margin-right: $gutter-size;
 }
 h1 {
-  margin-top: round($gutter-size * 2.66);
+  padding-top: round($gutter-size * 2);
+  thead & {
+    margin-bottom: $gutter-size;
+  }
+  //
+  // Fix hierarchy
+  tbody .docs & {
+    border-top: 1px dotted ($prose-bg-color - 2*$hx);
+    font-size: 1.5em; // h1's used in body are actually formatted as h2.
+  }
+}
+h2 {
+  font-size: 1.17em; // Shift h2 down to h3.
+  & code {
+    font-size: 1em;
+    @extend .prose-text;
+  }
+  margin-bottom: round($gutter-size * 0.5);
 }
 table td {
   border: 0;

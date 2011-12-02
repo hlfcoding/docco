@@ -10,7 +10,7 @@
 
 /*--------------------- Palette ------------------------------------------*/
 /*--------------------- Utility Classes ----------------------------------*/
-.prose-text, body {
+.prose-text, body, h2 code {
   font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
   font-size: 15px;
   line-height: 22px;
@@ -42,7 +42,18 @@ h1, h2, h3, h4, h5, h6 {
   margin-right: 15px; }
 
 h1 {
-  margin-top: 40px; }
+  padding-top: 30px; }
+  thead h1 {
+    margin-bottom: 15px; }
+  tbody .docs h1 {
+    border-top: 1px dotted #dfdfdf;
+    font-size: 1.5em; }
+
+h2 {
+  font-size: 1.17em;
+  margin-bottom: 8px; }
+  h2 code {
+    font-size: 1em; }
 
 table td {
   border: 0;
