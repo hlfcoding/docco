@@ -1,5 +1,5 @@
 @import "../vendor/hlf-framework.scss";
-/*--------------------- Palette ------------------------------------------*/
+///*--------------------- Palette ----------------------------------------*/
 $text-color: #252519;
 $link-color: #261a3b;
 $meta-color: #454545;
@@ -92,8 +92,10 @@ td.docs, th.docs {
 .docs {
   background: $prose-bg-color;
   pre {
+    @include scrollbar(h, $ui-gutter-size, $ui-gutter-size, $prose-bg-color, $b-1);
     margin: $gutter-size 0 $gutter-size;
     padding-left: $gutter-size;
+    border-left: 1px dotted ($prose-bg-color - 2*$hx);
   }
   p {
     tt, code {

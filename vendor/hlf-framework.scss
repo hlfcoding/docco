@@ -396,8 +396,18 @@ $hx: 16; // Hexidecimal Unit. Useful for color manipulation.
   }
 }
 
-@mixin scrollbar($orientation:v, $size:10px, $gutter:5px, $bg-color:#ccc,
-                 $inactive:true, $do-margin-hack:false)
+$sb_size: 10px;
+$sb_gutter: 5px;
+$sb_bg-color: #ccc;
+$sb_thumb-bg-rgba: $b-2;
+$sb_track-bg-rgba: $w-1;
+@mixin scrollbar($orientation:v,
+                 $size:$sb_size,
+                 $gutter:$sb_gutter,
+                 $bg-color:$sb_bg-color,
+                 $thumb-bg-rgba: $sb_thumb-bg-rgba,
+                 $track-bg-rgba: $sb_track-bg-rgba,
+                 $do-inactive:true, $do-margin-hack:false, $do-invert: false)
 {
   overflow: hidden;
   @if $do-margin-hack { background: $bg-color; } // Background needs to match content.
@@ -418,13 +428,15 @@ $hx: 16; // Hexidecimal Unit. Useful for color manipulation.
   // Only gives us the edge spacing.
   &::-webkit-scrollbar-track-piece { margin: $gutter; }
   // The rest.
-  &::-webkit-scrollbar-track { background: $w-1; }
+  &::-webkit-scrollbar-track { background: $track-bg-rgba; }
   &::-webkit-scrollbar-thumb {
+    $to-fade: 0.1;
+    @if alpha($thumb-bg-rgba) == 0.1 { $to-fade: 0.05; }
     @include border-radius($gutter - 1px);
-    background: $b-2;
-    &:hover { background: $b-4; }
-    @if $inactive {
-      &:window-inactive { background: $b-1; }
+    background: $thumb-bg-rgba;
+    &:hover { background: opacify($thumb-bg-rgba, 0.2); }
+    @if $do-inactive {
+      &:window-inactive { background: transparentize($thumb-bg-rgba, $to-fade); }
     }
   }
 }
