@@ -1,0 +1,246 @@
+@import "../vendor/hlf-framework.scss";
+/*--------------------- Palette ------------------------------------------*/
+$text-color: #252519;
+$link-color: #261a3b;
+$meta-color: #454545;
+$prose-bg-color: #fff;
+$code-bg-color: #f5f5ff;
+$ui-bg-color: #f4f4f4;
+$gutter-size: 15px;
+$ui-gutter-size: 5px;
+$page-gutter-size: 0.5%;
+$prose-width: 525px;
+/*--------------------- Utility Classes ----------------------------------*/
+.prose-text {
+  font: {
+    family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    size: $gutter-size;
+  }
+  line-height: 22px;
+  color: $text-color;
+}
+.code-text {
+  font: {
+    family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+    size: 12px;
+  }
+  line-height: 18px;
+}
+.meta-text {
+  font: 10px Arial;
+}
+.reset {
+  margin: 0;
+  padding: 0;
+}
+
+/*--------------------- Layout and Typography ----------------------------*/
+body {
+  @extend .prose-text;
+  @extend .reset;
+  overflow: hidden;
+}
+a {
+  &, &:visited { color: $link-color; }
+}
+p {
+  @extend .reset;
+  margin-right: $gutter-size;
+}
+h1, h2, h3, h4, h5, h6 {
+  @extend .reset;
+  margin-right: $gutter-size;
+}
+h1 {
+  margin-top: round($gutter-size * 2.66);
+}
+table td {
+  border: 0;
+  outline: 0;
+
+}
+
+td.docs, th.docs {
+  $padding-left: round($gutter-size * 3.33);
+  $padding-right: round($gutter-size * 1.66);
+  $width: $prose-width - ($padding-right + $padding-left);
+  max-width: $width;
+  min-width: $width;
+  min-height: round($gutter-size * 0.33);
+  padding: round($gutter-size * 0.66) $padding-right 1px $padding-left;
+  overflow: hidden;
+  vertical-align: top;
+  text-align: left;
+}
+.docs {
+  background: $prose-bg-color;
+  pre {
+    margin: $gutter-size 0 $gutter-size;
+    padding-left: $gutter-size;
+  }
+  p {
+    tt, code {
+      background: $code-bg-color + 3;
+      border: 1px solid ($code-bg-color - 2*$hx);
+      padding: 0 0.2em;
+    }
+  }
+}
+.pilwrap {
+  position: relative;
+}
+.pilcrow {
+  @include transition(opacity, 0.1s);
+  font: 12px Arial;
+  text-decoration: none;
+  color: $meta-color;
+  position: absolute;
+  top: round($gutter-size * 0.2); left: round(-$gutter-size * 1.25);
+  padding: 1px 2px;
+  opacity: 0;
+  td.docs:hover & { opacity: 1; }
+}
+
+td.code, th.code {
+  padding: ($gutter-size - 1px) $gutter-size ($gutter-size + 1px) round($gutter-size * 1.66);
+  width: 100%;
+  vertical-align: top;
+  background: $code-bg-color;
+  border-left: 1px solid ($code-bg-color - $hx);
+}
+pre, tt, code {
+  @extend .code-text;
+  @extend .reset;
+}
+
+#container {
+  position: relative;
+}
+#background {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  left: $prose-width;
+  background: $code-bg-color;
+  border-left: 1px solid ($code-bg-color - $hx);
+  z-index: -2;
+}
+#scroller {
+  @include scrollbar(both, $ui-gutter-size, $ui-gutter-size, $code-bg-color);
+  position: fixed;
+  top: 0; left: 0;
+  bottom: $page-gutter-size; right: $page-gutter-size;
+  height: 100% - $page-gutter-size;
+  z-index: -1;
+  background: $code-bg-color;
+}
+#jump_to, #jump_wrapper {
+  @extend .meta-text;
+  @include border-corner-radius(bottom-left, bottomleft, $ui-gutter-size);
+  @include single-inset(0, 0, 0, $ui-bg-color + $hx, 1px);
+  background: $ui-bg-color;
+  border: 1px solid ($ui-bg-color - 2*$hx);
+  border: { top: 0; right: 0; }
+  cursor: pointer;
+  text-align: right;
+  position: fixed;
+  right: 0; top: 0;
+}
+#jump_to {
+  padding: $ui-gutter-size ($ui-gutter-size * 2);
+  text-transform: uppercase;
+  #jump_wrapper {
+    text-transform: lowercase;
+    padding: 0 $ui-gutter-size 0 0;
+    display: none;
+    height: 97%;
+    #jump_scroller {
+      @include scrollbar(v, $ui-gutter-size, $ui-gutter-size, $ui-bg-color);
+      height: 100%;
+      margin-bottom: $ui-gutter-size * 2;
+      #jump_page {
+        padding: $ui-gutter-size 0;
+        margin-right: $ui-gutter-size;
+        .source {
+          @include transition(background, 0.2s);
+          @include ruled($ui-bg-color + $hx, $ui-bg-color - $hx);
+          display: block;
+          padding: $ui-gutter-size ($ui-gutter-size * 2);
+          text-decoration: none;
+          &:hover {
+            background: $ui-bg-color + $hx;
+          }
+        }
+      }
+    }
+  }
+  &:hover #jump_wrapper {
+    display: block;
+  }
+}
+
+/*---------------------- Syntax Highlighting -----------------------------*/
+td.linenos { background-color: $ui-bg-color; padding-right: $ui-gutter-size * 2; }
+span.lineno { background-color: $ui-bg-color; padding: 0 $ui-gutter-size; }
+body {
+  .hll { background-color: #ffffcc }
+  .c   { color: #408080; font-style: italic } /* Comment */
+  .err { border: 1px solid #FF0000 }          /* Error */
+  .k   { color: #954121 }                     /* Keyword */
+  .o   { color: #666666 }                     /* Operator */
+  .cm  { color: #408080; font-style: italic } /* Comment.Multiline */
+  .cp  { color: #BC7A00 }                     /* Comment.Preproc */
+  .c1  { color: #408080; font-style: italic } /* Comment.Single */
+  .cs  { color: #408080; font-style: italic } /* Comment.Special */
+  .gd  { color: #A00000 }                     /* Generic.Deleted */
+  .ge  { font-style: italic }                 /* Generic.Emph */
+  .gr  { color: #FF0000 }                     /* Generic.Error */
+  .gh  { color: #000080; font-weight: bold }  /* Generic.Heading */
+  .gi  { color: #00A000 }                     /* Generic.Inserted */
+  .go  { color: #808080 }                     /* Generic.Output */
+  .gp  { color: #000080; font-weight: bold }  /* Generic.Prompt */
+  .gs  { font-weight: bold }                  /* Generic.Strong */
+  .gu  { color: #800080; font-weight: bold }  /* Generic.Subheading */
+  .gt  { color: #0040D0 }                     /* Generic.Traceback */
+  .kc  { color: #954121 }                     /* Keyword.Constant */
+  .kd  { color: #954121; font-weight: bold }  /* Keyword.Declaration */
+  .kn  { color: #954121; font-weight: bold }  /* Keyword.Namespace */
+  .kp  { color: #954121 }                     /* Keyword.Pseudo */
+  .kr  { color: #954121; font-weight: bold }  /* Keyword.Reserved */
+  .kt  { color: #B00040 }                     /* Keyword.Type */
+  .m   { color: #666666 }                     /* Literal.Number */
+  .s   { color: #219161 }                     /* Literal.String */
+  .na  { color: #7D9029 }                     /* Name.Attribute */
+  .nb  { color: #954121 }                     /* Name.Builtin */
+  .nc  { color: #0000FF; font-weight: bold }  /* Name.Class */
+  .no  { color: #880000 }                     /* Name.Constant */
+  .nd  { color: #AA22FF }                     /* Name.Decorator */
+  .ni  { color: #999999; font-weight: bold }  /* Name.Entity */
+  .ne  { color: #D2413A; font-weight: bold }  /* Name.Exception */
+  .nf  { color: #0000FF }                     /* Name.Function */
+  .nl  { color: #A0A000 }                     /* Name.Label */
+  .nn  { color: #0000FF; font-weight: bold }  /* Name.Namespace */
+  .nt  { color: #954121; font-weight: bold }  /* Name.Tag */
+  .nv  { color: #19469D }                     /* Name.Variable */
+  .ow  { color: #AA22FF; font-weight: bold }  /* Operator.Word */
+  .w   { color: #bbbbbb }                     /* Text.Whitespace */
+  .mf  { color: #666666 }                     /* Literal.Number.Float */
+  .mh  { color: #666666 }                     /* Literal.Number.Hex */
+  .mi  { color: #666666 }                     /* Literal.Number.Integer */
+  .mo  { color: #666666 }                     /* Literal.Number.Oct */
+  .sb  { color: #219161 }                     /* Literal.String.Backtick */
+  .sc  { color: #219161 }                     /* Literal.String.Char */
+  .sd  { color: #219161; font-style: italic } /* Literal.String.Doc */
+  .s2  { color: #219161 }                     /* Literal.String.Double */
+  .se  { color: #BB6622; font-weight: bold }  /* Literal.String.Escape */
+  .sh  { color: #219161 }                     /* Literal.String.Heredoc */
+  .si  { color: #BB6688; font-weight: bold }  /* Literal.String.Interpol */
+  .sx  { color: #954121 }                     /* Literal.String.Other */
+  .sr  { color: #BB6688 }                     /* Literal.String.Regex */
+  .s1  { color: #219161 }                     /* Literal.String.Single */
+  .ss  { color: #19469D }                     /* Literal.String.Symbol */
+  .bp  { color: #954121 }                     /* Name.Builtin.Pseudo */
+  .vc  { color: #19469D }                     /* Name.Variable.Class */
+  .vg  { color: #19469D }                     /* Name.Variable.Global */
+  .vi  { color: #19469D }                     /* Name.Variable.Instance */
+  .il  { color: #666666 }                     /* Literal.Number.Integer.Long */
+}
