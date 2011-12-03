@@ -187,6 +187,7 @@ pre, tt, code {
           display: block;
           padding: $ui-gutter-size ($ui-gutter-size * 2);
           text-decoration: none;
+          &.selected,
           &:hover {
             background: $ui-bg-color + $hx;
           }

@@ -76,7 +76,7 @@ td.code, th.code { padding: 14px 15px 16px 25px; width: 100%; vertical-align: to
 #jump_to #jump_wrapper #jump_scroller #jump_page .source { border-top: 1px solid white; border-bottom: 1px solid #e4e4e4; }
 #jump_to #jump_wrapper #jump_scroller #jump_page .source:first-child, #jump_to #jump_wrapper #jump_scroller #jump_page .source.first { border-top: 0; }
 #jump_to #jump_wrapper #jump_scroller #jump_page .source:last-child, #jump_to #jump_wrapper #jump_scroller #jump_page .source.last { border-bottom: 0; }
-#jump_to #jump_wrapper #jump_scroller #jump_page .source:hover { background: white; }
+#jump_to #jump_wrapper #jump_scroller #jump_page .source.selected, #jump_to #jump_wrapper #jump_scroller #jump_page .source:hover { background: white; }
 #jump_to:hover #jump_wrapper { display: block; }
 
 /*---------------------- Syntax Highlighting -----------------------------*/
