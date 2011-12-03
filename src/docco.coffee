@@ -209,11 +209,33 @@ template = (str) ->
        .split('%>').join("p.push('") +
        "');}return p.join('');"
 
+# Get directory files and do something to them.
+get_directory_files = (dir, callback) ->
+  fs.readdirSync(dir).forEach (file) ->
+    fpath = "#{dir}/#{file}"
+    fstat = fs.statSync fpath
+    if fstat.isFile() then callback fpath
+    if fstat.isDirectory() then get_directory_files fpath, callback
+  
+
 # Create the template that we will use to generate the Docco HTML page.
 docco_template  = template fs.readFileSync(__dirname + '/../resources/docco.jst').toString()
 
 # The CSS styles we'd like to apply to the documentation.
 docco_styles    = fs.readFileSync(__dirname + '/../resources/docco.css').toString()
+
+# The JS scripts we'd like to apply to the documentation. We'll concatenate the
+# required js files and prepend them to the main client script. This does not
+# include jQuery, which is loaded via cdn.
+docco_client_scripts = (() ->
+  includes = []
+  get_directory_files(__dirname + '/../vendor/client', (fullPath) ->
+    includes.push fs.readFileSync(fullPath).toString()
+  )
+  console.log "docco: found #{includes.length} client script include(s)..."
+  includes = includes.join("\n")
+  return includes + "\n" + fs.readFileSync(__dirname + '/../lib/docco-client.js').toString()
+)()
 
 # The start of each Pygments highlight block.
 highlight_start = '<div class="highlight"><pre>'
@@ -227,6 +249,7 @@ sources = process.ARGV.sort()
 if sources.length
   ensure_directory 'docs', ->
     fs.writeFile 'docs/docco.css', docco_styles
+    fs.writeFile 'docs/docco-client.js', docco_client_scripts
     files = sources.slice(0)
     next_file = -> generate_documentation files.shift(), next_file if files.length
     next_file()
