@@ -10,12 +10,18 @@ NAV_MODE  = 'navmode.docco'
 #
 # Globals
 # -------
+docco =
+  debug: on
+window.docco = docco
+#
+# Scope Globals
+# -------------
 _mode = null
 $doc = $(document)
 $menu = null
 #
-# Procedures
-# ----------
+# Global Methods
+# --------------
 mode = (constant) ->
   if constant? and constant isnt _mode
     _mode = constant
@@ -23,7 +29,11 @@ mode = (constant) ->
     # console.log "docco: mode changed to `#{constant}`"
   _mode
 
+#
+# JQuery Object Methods
+# ---------------------
 select = (increment=0) ->
+  # 1. Select toroidally by toggling class.
   start = @$items.filter('.selected').first().index()
   if start is -1 then start = 0
   # console.log "docco: select from start `#{start}`"
@@ -35,7 +45,25 @@ select = (increment=0) ->
   @$items
     .removeClass('selected')
     .eq(index).addClass('selected')
+  # 2. Scroll toroidally as needed by updating scrollTop.
+  if increment is 0 then return
+  if not @_hasScroll
+    @_hasScroll = @$itemWrapper.innerHeight() > @innerHeight()
+    # console.log "docco: has-scroll is `#{@_hasScroll}`"
+  if not @_itemHeight
+    @_itemHeight = @$items.first().outerHeight() + 1
+    # console.log "docco: remembered item-height as `#{@_itemHeight}`"
+  if @_hasScroll is true
+    top = @scroller.scrollTop
+    top += @_itemHeight * increment
+    if index is last then top = @$itemWrapper.innerHeight() - @innerHeight()
+    else if index is 0 then top = 0
+    @scroller.scrollTop = top
+    # console.log "docco: scrolling"
 
+#
+# Procedures
+# ----------
 setup = () ->
   #
   # Read mode by default.
@@ -92,7 +120,12 @@ setup = () ->
 
 $(() ->
   $menu = $ '#jump_wrapper'
+  # Properties
+  $menu.$itemWrapper = $menu.find '#jump_page'
   $menu.$items = $menu.find 'a.source'
+  $menu.scroller = document.getElementById 'jump_scroller'
+  # Methods
   $menu.select = select
+  if docco.debug is on then window.$menu = $menu
   setup()
 )
