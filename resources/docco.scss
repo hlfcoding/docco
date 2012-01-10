@@ -73,6 +73,11 @@ h2 {
   }
   margin-bottom: round($gutter-size * 0.5);
 }
+hr {
+  height: 0;
+  border: 0;
+  border-top: 1px dotted ($prose-bg-color - 2*$hx);
+}
 table td {
   border: 0;
   outline: 0;
