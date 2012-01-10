@@ -80,11 +80,6 @@ setup = () ->
       if mode() isnt NAV_MODE
         mode NAV_MODE
 
-    .bind 'keydown', 'u', () ->
-      # Show the menu.
-      if mode() is NAV_MODE
-        $menu.css 'display', 'block'
-
     .bind 'keydown', 'up', () ->
       if mode() is NAV_MODE 
         $menu.select -1
@@ -112,7 +107,8 @@ setup = () ->
       $menu.css 'display', 'none'
       $menu.attr 'style', ''
 
-    .on NAV_MODE, () -> return false
+    .on NAV_MODE, () -> 
+      $menu.css 'display', 'block'
 
   $menu.on 'click', (evt) -> evt.stopPropagation()
 
