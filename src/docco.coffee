@@ -200,7 +200,9 @@ get_language = (source) -> languages[path.extname(source)]
 # Compute the destination HTML path for an input source file path. If the source
 # is `lib/example.coffee`, the HTML will be at `docs/example.html`
 destination = (filepath) ->
-  'docs/' + filepath.replace(/\//g, '.') + '.html'
+  filepath = if path.basename(filepath) is conf.index_file # TODO - assuming it's a root file
+  then 'docs/index.html'
+  else "docs/#{filepath.replace(/\//g, '.')}.html"
 
 # Ensure that the destination directory exists.
 ensure_directory = (dir, callback) ->
@@ -255,14 +257,82 @@ highlight_start = '<div class="highlight"><pre>'
 # The end of each Pygments highlight block.
 highlight_end   = '</pre></div>'
 
-# Run the script.
-# For each source file passed in as an argument, generate the documentation.
-sources = process.ARGV.sort()
-if sources.length
-  ensure_directory 'docs', ->
-    fs.writeFile 'docs/docco.css', docco_styles
-    fs.writeFile 'docs/docco-client.js', docco_client_scripts
-    files = sources.slice(0)
-    next_file = -> generate_documentation files.shift(), next_file if files.length
-    next_file()
+# Load and process config `./docco.json` file if it exists.
+conf = JSON.parse fs.readFileSync("#{process.cwd()}/docco.json")
+conf.base_dir ?= ''
+conf.file_types ?= ['js']
+conf.exclude_dirs ?= ''
+conf.exclude_files ?= ''
+conf.index_file ?= ''
 
+# Loop through arguments; make the tough decisions.
+sources = []
+args = process.ARGV.slice()
+while args.length
+  switch arg = args.shift()
+    # If you want to see the Docco version using `--version`, your ride ends here
+    when '--version'
+      console.log "Docco v#{version}"
+      return
+    # `--recursive` will recursively find all files that match any **patterns** passed to
+    # docco. These patterns will use Javascript Regex and match against the entire
+    # file path. This will also trigger the directories to be structured and trigger
+    # the css to render inline.
+    #
+    # An example of using the --recursive flag would be:
+    # 
+    #    docco --recursive .*\.js .*\.coffee
+    # 
+    when '--recursive' then conf.recursive = true
+    # Additional args can be set via a `docco.json` in the cwd.
+    else sources.push arg
+
+# Main generator.
+run_script = -> 
+  sources = sources.map (s) -> path.normalize s
+  sources.sort()
+  if sources.length
+    console.log "docco: generating for #{sources.length} files..."
+    ensure_directory 'docs', ->
+      fs.writeFile 'docs/docco.css', docco_styles
+      fs.writeFile 'docs/docco-client.js', docco_client_scripts
+      files = sources.slice()
+      next_file = -> generate_documentation files.shift(), next_file if files.length
+      next_file()
+
+# Directory tree walking helper.
+# Not the same as `get_directory_files`.
+skipped = 0
+walk = (full_path) ->
+  children = fs.readdirSync full_path
+  console.log "docco: generating for #{full_path}..."
+  # Make the path relative.
+  file_path = full_path.replace base_path
+  for c in children
+    p = "#{file_path}/#{c}"
+    fp = "#{full_path}/#{c}"
+    stat = fs.statSync fp
+    if stat.isFile() and type_pattern.test(p) and not file_pattern.test(p) then sources.push p 
+    else if stat.isDirectory() and not dir_pattern.test(p) then walk.call this, fp
+    else console.log "docco: skipped (#{skipped++}) #{p}"
+  
+  skipped
+
+# Run the walker script as needed.
+if conf.recursive
+  sources = []
+  base_path = "#{process.cwd()}/#{conf.base_dir}"
+  base_pattern = new RegExp "^#{conf.base_dir}/"
+  console.log "docco: generating recursively, reseting and getting files..."
+  type_pattern = new RegExp "\\.(#{conf.file_types.join('|')})$", 'i'
+  file_pattern = new RegExp "\\/\\.[^\\/]*
+#{(if conf.exclude_files.length then '|(' else '')}
+#{conf.exclude_files.join('|')})$", 'i'
+  dir_pattern = new RegExp "\\/\\.[^\\/]*
+#{(if conf.exclude_dirs.length then '|' else '')}
+#{conf.exclude_dirs.join('|')}$", 'i'
+  console.log "patterns: #{type_pattern}, #{file_pattern}, #{dir_pattern}"
+  walk conf.base_dir
+
+# Run the generator script.
+run_script()
