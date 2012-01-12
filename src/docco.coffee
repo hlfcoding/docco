@@ -135,9 +135,13 @@ highlight = (source, sections, callback) ->
 generate_html = (source, sections) ->
   title = path.basename source
   dest  = destination source
-  html  = docco_template {
-    title: title, sections: sections, sources: sources, path: path, destination: destination
-  }
+  html  = docco_template 
+    title: title 
+    sections: sections 
+    sources: sources 
+    path: path 
+    destination: destination
+  
   console.log "docco: #{source} -> #{dest}"
   fs.writeFile dest, html
 
@@ -235,10 +239,10 @@ docco_styles    = fs.readFileSync(__dirname + '/../resources/docco.css').toStrin
 # The JS scripts we'd like to apply to the documentation. We'll concatenate the
 # required js files and prepend them to the main client script. This does not
 # include jQuery, which is loaded via cdn.
-docco_client_scripts = (() ->
+docco_client_scripts = (->
   includes = []
-  get_directory_files(__dirname + '/../vendor/client', (fullPath) ->
-    includes.push fs.readFileSync(fullPath).toString()
+  get_directory_files(__dirname + '/../vendor/client', (full_path) ->
+    includes.push fs.readFileSync(full_path).toString()
   )
   console.log "docco: found #{includes.length} client script include(s)..."
   includes = includes.join("\n")
