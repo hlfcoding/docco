@@ -175,7 +175,7 @@ pre, tt, code {
   padding: $ui-gutter-size ($ui-gutter-size * 2);
   text-transform: uppercase;
   #jump_wrapper {
-    text-transform: lowercase;
+    text-transform: none;
     padding: 0 $ui-gutter-size 0 0;
     display: none;
     height: 97%;

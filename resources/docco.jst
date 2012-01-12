@@ -16,9 +16,10 @@
         <div id="jump_scroller">
           <div id="jump_page">
             <% for (var i=0, l=sources.length; i<l; i++) { %>
-              <% var source = sources[i]; %>
-              <a class="source" href="<%= path.basename(destination(source)) %>">
-                <%= source.replace((/\//g), '.') %>
+              <% var dest = path.basename(destination(sources[i])); %>
+              <a class="source" href="<%= dest %>"
+                 title="<%= sources[i] %>">
+                <%= dest.split('.').slice(-3).slice(0, -2).join('.') %>
               </a>
             <% } %>
           </div>
