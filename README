@@ -11,3 +11,13 @@ Docco is a quick-and-dirty, hundred-line-long, literate-programming-style
 documentation generator. For more information, see:
 
 http://jashkenas.github.com/docco/
+
+Sample `docco.json` in project root:
+
+  {
+    "base_dir": "js",
+    "file_types": ["js"],
+    "exclude_dirs": ["build", "flowplayer", "jquery\\/ui"],
+    "exclude_files": ["jquery\\.js", "json2\\.js", "raphael\\.js", "underscore\\.js", "jquery\\/ba-bbq\\.js", "tests\\/qunit\\.js"],
+    "index_file": "ox3.js"
+  }
