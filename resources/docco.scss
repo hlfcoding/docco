@@ -36,6 +36,32 @@ $prose-width: 525px;
   padding: 0;
 }
 
+.close-button {
+  $size: 12px;
+  $color: $ui-bg-color;
+  $bg-color: mix(invert($color), $color, 20%);
+  @include border-radius(ceil($size / 2));
+  display: block; height: $size; width: $size;
+  vertical-align: baseline; line-height: $size; white-space: nowrap;
+  text: {
+    align: center;
+    transform: lowercase;
+    decoration: none;
+  }
+  font: {
+    size: round($size * 0.8);
+    weight: bold;
+  }
+  color: $color;
+  background: {
+    color: $bg-color;
+  }
+  &:hover {
+    color: $color + 2*$hx;
+    background: $bg-color - 2*$hx;
+  }
+}
+
 /*--------------------- Layout and Typography ----------------------------*/
 body {
   @extend .prose-text;
@@ -184,6 +210,7 @@ pre, tt, code {
       height: 100%;
       margin-bottom: $ui-gutter-size * 2;
       #jump_page {
+        min-width: 72px; // size of #jump_to
         padding: $ui-gutter-size 0;
         margin-right: $ui-gutter-size;
         .source {
@@ -197,6 +224,32 @@ pre, tt, code {
             background: $ui-bg-color + $hx;
           }
         }
+      }
+    }
+    #jump_search_wrapper {
+      $padding-top: round($ui-gutter-size/2);
+      $padding-side: $ui-gutter-size;
+      position: relative;
+      margin: $padding-top $padding-side 0 $padding-side;
+      #clear_search {
+        @extend .close-button;
+        position: absolute; 
+        top: $padding-top * 2 + 1; 
+        right: $padding-side;
+      }
+      #jump_search {
+        $border-color: $ui-bg-color + 2*$hx;
+        @include border-radius(3px);
+        @include single-inset(0, 1px, 4px, $b-3);
+        outline: 0;
+        padding: 3px 3%;
+        border: 1px solid $border-color;
+        color: $text-color + 6*$hx;
+        &:focus { 
+          border-color: mix(invert($border-color), $border-color, 40%); 
+          color: $text-color;
+        }
+        width: 94%;
       }
     }
   }
