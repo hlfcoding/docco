@@ -75,7 +75,7 @@ setup = () ->
   # 2. Other handlers.
   # 3. Mode handlers.
   $doc
-    .bind 'keydown', 'g', () ->
+    .bind 'keydown', 't', ->
       # Trigger nav mode.
       if mode() isnt NAV_MODE
         mode NAV_MODE
