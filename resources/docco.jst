@@ -19,11 +19,12 @@
         </form>
         <div id="jump_scroller">
           <div id="jump_page">
-            <% for (var i=0, l=sources.length; i<l; i++) { %>
-              <% var dest = path.basename(destination(sources[i])); %>
+            <% var i, dest, dest_; for (i=0, l=sources.length; i<l; i++) { %>
+              <% dest = path.basename(destination(sources[i])); %>
+              <% dest_ = path.basename(destination(sources[i]), true); %>
               <a class="source" href="<%= dest %>"
                  title="<%= sources[i] %>">
-                <%= dest.split('.').slice(-3).slice(0, -2).join('.') %>
+                <%= dest_.split('.').slice(-3).slice(0, -2).join('.') %>
               </a>
             <% } %>
           </div>

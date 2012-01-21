@@ -195,16 +195,19 @@ $(() ->
         @$searchItems.remove()
         @$searchItems = null
         @_didHeightFix = no
-      @$itemWrapper().append(@$items).fadeIn 'fast', =>
-      
+      @$itemWrapper().append(@$items).fadeIn 'fast'
     
   # - override jQuery
   $menu.show = ->
     @css 'display', 'block'
     # - Do menu height fix as needed.
     if not @_didHeightFix
-      @$scroller.height(@$scroller.height() - @$searchWrapper.height() - 3)
-      @_didHeightFix = yes 
+      if not @_heightFixHeight
+        @_heightFixHeight ?= @$scroller.height() - @$searchWrapper.height() - 3
+        # TODO - Fix for window.resize.
+        # $(window).resize => delete @_heightFixHeight
+      @$scroller.height @_heightFixHeight
+      @_didHeightFix = yes
   
   $menu.hide = -> 
     @css 'display', 'none'

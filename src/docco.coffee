@@ -199,8 +199,8 @@ get_language = (source) -> languages[path.extname(source)]
 
 # Compute the destination HTML path for an input source file path. If the source
 # is `lib/example.coffee`, the HTML will be at `docs/example.html`
-destination = (filepath) ->
-  filepath = if path.basename(filepath) is conf.index_file # TODO - assuming it's a root file
+destination = (filepath, do_true=no) ->
+  filepath = if path.basename(filepath) is conf.index_file and do_true is no # TODO - assuming it's a root file
   then 'docs/index.html'
   else "docs/#{filepath.replace(/\//g, '.')}.html"
 
