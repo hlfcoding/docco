@@ -62,6 +62,7 @@ select = (increment=0) ->
     else if index is 0 then top = 0
     @$scroller.get(0).scrollTop = top
     # console.log "docco: scrolling"
+  return @
 
 search = (query) ->
   query ?= @$searchField.val()
@@ -148,9 +149,17 @@ setup = () ->
   #
   # Menu bindings
   $menu.on 'click', (e) -> e.stopPropagation()
+  # Directory navigation works on top of search.
   $menu.$navItems.on 'click', (e) ->
+    $item = $ @
     e.preventDefault()
-    $menu.search $(@).data('path')
+    return if $item.is '.selected'
+    # Update UI and search.
+    $menu.$navItems.removeClass 'selected'
+    $menu.search $item.addClass('selected').data('path')
+    # Update field.
+    $menu.$searchField.val($item.data('path')).blur()
+  
   #
   # Search bindings
   $menu.$searchWrapper.on 'submit', (e) ->
@@ -158,7 +167,7 @@ setup = () ->
     $menu.$searchField.blur()
     e.preventDefault()
   
-  $menu.$searchField.on 'focus blur', (e) -> 
+  $menu.$searchField.on 'focus blur', (e) ->
     $menu.$clearSearch.toggle !!$(@).val()
     switch e.type
       when 'focus' then mode SEARCH_MODE
@@ -167,6 +176,20 @@ setup = () ->
   $menu.$clearSearch.click -> 
     $menu.$searchField.val ''
     $menu.reset()
+  
+  #
+  # Fix for height fix.
+  $(window).on 'resize', ->
+    # Throttle.
+    return if not $menu._didHeightFix
+    # Reset height.
+    $menu.$scroller.css 'height', '100%'
+    $menu._heightFixHeight = null
+    $menu._didHeightFix = no
+    # Redraw as needed.
+    if $menu.is ':visible'
+      $menu.hide()
+      $menu.show()
   
   #
   # Initialize.
@@ -186,6 +209,7 @@ $(() ->
     switch mode()
       when SEARCH_MODE then if @$searchItems then @$searchItems
       else @$items
+  
   # - temp
   $menu.$searchItems = $()
   # Methods
@@ -199,8 +223,10 @@ $(() ->
         @$searchItems.remove()
         @$searchItems = null
         @_didHeightFix = no
-      @$itemWrapper().append(@$items).fadeIn 'fast'
+      @$itemWrapper().empty().append(@$items).fadeIn 'fast'
     
+    return @
+  
   # - override jQuery
   $menu.show = ->
     @css 'display', 'block'
@@ -208,14 +234,14 @@ $(() ->
     if not @_didHeightFix
       if not @_heightFixHeight
         @_heightFixHeight ?= @$scroller.height() - @$searchWrapper.height() - 3
-        # TODO - Fix for window.resize.
-        # $(window).resize => delete @_heightFixHeight
       @$scroller.height @_heightFixHeight
       @_didHeightFix = yes
+    return @
   
   $menu.hide = -> 
     @css 'display', 'none'
     @attr 'style', ''
+    return @
   
   # Debug
   if docco.debug is on 
