@@ -8,6 +8,7 @@
 READ_MODE = 'readmode.docco'
 NAV_MODE  = 'navmode.docco'
 SEARCH_MODE  = 'searchmode.docco'
+EMPTY = 'empty.docco'
 #
 # Globals
 # -------
@@ -73,13 +74,15 @@ search = (query) ->
       .clone()
     results = @$searchItems.length
     # Manipulate.
-    @$itemWrapper().fadeOut 'fast', =>
-      @$items.detach()
-      @_didHeightFix = no
-      # Empty to make sure.
-      @$itemWrapper().empty().append(@$searchItems).fadeIn 'fast'
-    
-  !!results
+    if !!results
+      @$itemWrapper().fadeOut 'fast', =>
+        @$items.detach()
+        @_didHeightFix = no
+        # Empty to make sure.
+        @$itemWrapper().empty().append(@$searchItems).fadeIn 'fast'
+      
+    else @trigger EMPTY, ['search']
+  return @
 
 #
 # Procedures
@@ -148,7 +151,17 @@ setup = () ->
     
   #
   # Menu bindings
-  $menu.on 'click', (e) -> e.stopPropagation()
+  $menu
+    .on 'click', (e) ->
+      e.stopPropagation()
+    
+    .on EMPTY, (e, referrer) ->
+      e.stopPropagation()
+      switch referrer
+        when 'search'
+          if docco.no_results_html
+            $menu.$itemWrapper().empty().html docco.no_results_html
+    
   # Directory navigation works on top of search.
   $menu.$navItems.on 'click', (e) ->
     $item = $ @

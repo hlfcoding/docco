@@ -19,6 +19,7 @@
 .menu-item:first-child, #jump_to #jump_wrapper #jump_scroller #jump_page .source:first-child, #jump_to #jump_wrapper #jump_dirs .dir:first-child, .menu-item.first, #jump_to #jump_wrapper #jump_scroller #jump_page .first.source, #jump_to #jump_wrapper #jump_dirs .first.dir { border-top: 0; }
 .menu-item:last-child, #jump_to #jump_wrapper #jump_scroller #jump_page .source:last-child, #jump_to #jump_wrapper #jump_dirs .dir:last-child, .menu-item.last, #jump_to #jump_wrapper #jump_scroller #jump_page .last.source, #jump_to #jump_wrapper #jump_dirs .last.dir { border-bottom: 0; }
 .menu-item.selected, #jump_to #jump_wrapper #jump_scroller #jump_page .selected.source, #jump_to #jump_wrapper #jump_dirs .selected.dir, .menu-item:hover, #jump_to #jump_wrapper #jump_scroller #jump_page .source:hover, #jump_to #jump_wrapper #jump_dirs .dir:hover { background: white; }
+.menu-item.no-results, #jump_to #jump_wrapper #jump_scroller #jump_page .no-results.source, #jump_to #jump_wrapper #jump_dirs .no-results.dir { color: #8c8c86; }
 
 /*--------------------- Layout and Typography ----------------------------*/
 body { overflow: hidden; }

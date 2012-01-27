@@ -72,6 +72,9 @@ $prose-width: 525px;
   &:hover {
     background: $ui-bg-color + $hx;
   }
+  &.no-results {
+    color: mix($ui-bg-color, $text-color, 50%);
+  }
 }
 
 /*--------------------- Layout and Typography ----------------------------*/
