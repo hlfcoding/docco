@@ -141,7 +141,7 @@ generate_html = (source, sections) ->
     sources: sources 
     path: path 
     destination: destination
-  
+    dirs: sub_dirs
   console.log "docco: #{source} -> #{dest}"
   fs.writeFile dest, html
 
@@ -264,12 +264,14 @@ conf.file_types ?= ['js']
 conf.exclude_dirs ?= ''
 conf.exclude_files ?= ''
 conf.index_file ?= ''
+conf.dir_floor ?= 1
+conf.dir_ceil ?= 4
 
 # Loop through arguments; make the tough decisions.
 sources = []
 args = process.ARGV.slice()
 while args.length
-  switch arg = args.shift()
+  switch (arg = args.shift())
     # If you want to see the Docco version using `--version`, your ride ends here
     when '--version'
       console.log "Docco v#{version}"
@@ -303,24 +305,26 @@ run_script = ->
 # Directory tree walking helper.
 # Not the same as `get_directory_files`.
 skipped = 0
-walk = (full_path) ->
+walk = (full_path, callback, _level=0) ->
+  _level++
   children = fs.readdirSync full_path
   console.log "docco: generating for #{full_path}..."
   # Make the path relative.
   file_path = full_path.replace base_path
+  callback file_path, _level
   for c in children
     p = "#{file_path}/#{c}"
     fp = "#{full_path}/#{c}"
     stat = fs.statSync fp
     if stat.isFile() and type_pattern.test(p) and not file_pattern.test(p) then sources.push p 
-    else if stat.isDirectory() and not dir_pattern.test(p) then walk.call this, fp
+    else if stat.isDirectory() and not dir_pattern.test(p) then walk.call this, fp, callback, _level
     else console.log "docco: skipped (#{skipped++}) #{p}"
-  
   skipped
 
 # Run the walker script as needed.
 if conf.recursive
   sources = []
+  sub_dirs = []
   base_path = "#{process.cwd()}/#{conf.base_dir}"
   base_pattern = new RegExp "^#{conf.base_dir}/"
   console.log "docco: generating recursively, reseting and getting files..."
@@ -332,7 +336,8 @@ if conf.recursive
 #{(if conf.exclude_dirs.length then '|' else '')}
 #{conf.exclude_dirs.join('|')}$", 'i'
   console.log "patterns: #{type_pattern}, #{file_pattern}, #{dir_pattern}"
-  walk conf.base_dir
+  walk conf.base_dir, (path, level) -> 
+    sub_dirs.push path if conf.dir_floor < level < conf.dir_ceil
 
 # Run the generator script.
 run_script()

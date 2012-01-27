@@ -9,7 +9,7 @@
 <body>
   <div id="container">
     <div id="background"></div>
-  <% if (sources.length > 1) { %>
+  <% if (sources.length > 1) { var i, l, dest, dest_; %>
     <div id="jump_to">
       Jump To &hellip;
       <div id="jump_wrapper">
@@ -17,13 +17,21 @@
           <input id="jump_search" name="jump_search" type="text" placeholder="Search..." tabindex="1">
           <a id="clear_search" href="#" title="Clear">x</a>
         </form>
+        <div id="jump_dirs">
+          <% for (i=0, l=dirs.length; i<l; i++) { %>
+            <a class="dir" href="#"
+               title="<%= dirs[i] %>" data-path="<%= dirs[i] %>">
+               <%= dirs[i].split('/').slice(-2).join(' / ') %>
+            </a>
+          <% } %>
+        </div>
         <div id="jump_scroller">
           <div id="jump_page">
-            <% var i, dest, dest_; for (i=0, l=sources.length; i<l; i++) { %>
+            <% for (i=0, l=sources.length; i<l; i++) { %>
               <% dest = path.basename(destination(sources[i])); %>
               <% dest_ = path.basename(destination(sources[i]), true); %>
               <a class="source" href="<%= dest %>"
-                 title="<%= sources[i] %>">
+                 title="<%= sources[i] %>" data-path="<%= sources[i] %>">
                 <%= dest_.split('.').slice(-3).slice(0, -2).join('.') %>
               </a>
             <% } %>

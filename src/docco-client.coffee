@@ -68,7 +68,7 @@ search = (query) ->
   results = 0
   if query?
     # Get search results.
-    @$searchItems = @$items.filter(":contains('#{query}'), [title*='#{query}']")
+    @$searchItems = @$items.filter(":contains('#{query}'), [data-path*='#{query}']")
       .clone()
     results = @$searchItems.length
     # Manipulate.
@@ -148,6 +148,9 @@ setup = () ->
   #
   # Menu bindings
   $menu.on 'click', (e) -> e.stopPropagation()
+  $menu.$navItems.on 'click', (e) ->
+    e.preventDefault()
+    $menu.search $(@).data('path')
   #
   # Search bindings
   $menu.$searchWrapper.on 'submit', (e) ->
@@ -174,6 +177,7 @@ $(() ->
   # Properties
   $menu.$itemWrapper = -> $menu.find '#jump_page'
   $menu.$items = $menu.find 'a.source'
+  $menu.$navItems = $menu.find '#jump_dirs a.dir'
   $menu.$searchWrapper = $menu.find '#jump_search_wrapper'
   $menu.$searchField = $menu.find '#jump_search'
   $menu.$clearSearch = $menu.$searchWrapper.find '#clear_search'
