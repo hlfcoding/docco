@@ -19,5 +19,7 @@ Sample `docco.json` in project root:
     "file_types": ["js"],
     "exclude_dirs": ["build", "flowplayer", "jquery\\/ui"],
     "exclude_files": ["jquery\\.js", "json2\\.js", "raphael\\.js", "underscore\\.js", "jquery\\/ba-bbq\\.js", "tests\\/qunit\\.js"],
+    "dir_floor": 1,
+    "dir_ceil": 4,
     "index_file": "ox3.js"
   }
