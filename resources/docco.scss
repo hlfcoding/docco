@@ -213,11 +213,12 @@ pre, tt, code {
   padding: $ui-gutter-size ($ui-gutter-size * 2);
   text-transform: uppercase;
   #jump_wrapper {
-    @include clearfix;
+    @extend .clearfix;
     text-transform: none;
     padding: 0 $ui-gutter-size 0 0;
     display: none;
     height: 97%;
+    overflow: hidden;
     #jump_scroller {
       @include scrollbar(v, $ui-gutter-size, $ui-gutter-size, $ui-bg-color);
       height: 100%;
