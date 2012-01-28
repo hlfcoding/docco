@@ -6,7 +6,7 @@ $link-color: #261a3b;
 $meta-color: #454545;
 $prose-bg-color: #fff;
 $code-bg-color: #f5f5ff;
-$ui-bg-color: #f4f4f4;
+$ui-bg-color: #f0f0f0;
 $gutter-size: 15px;
 $ui-gutter-size: 5px;
 $page-gutter-size: 0.5%;
@@ -63,14 +63,16 @@ $prose-width: 525px;
 }
 
 .menu-item {
-  @include transition(background, 0.2s);
+  @include transition(background, 0.3s);
   @include ruled($ui-bg-color + $hx, $ui-bg-color - $hx);
   display: block;
   padding: $ui-gutter-size ($ui-gutter-size * 2);
   text-decoration: none;
-  &.selected,
-  &:hover {
+  &.selected, &.selected:hover {
     background: $ui-bg-color + $hx;
+  }
+  &:hover {
+    background: $ui-bg-color + $hx/4;
   }
   &.no-results {
     color: mix($ui-bg-color, $text-color, 50%);

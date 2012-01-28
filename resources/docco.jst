@@ -74,7 +74,11 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
   <script src="docco-client.js"></script>
   <script>
-    docco.no_results_html = '<div class="menu-item no-results">No results</div>';
+    // Separate markup from behavior and presentation.
+    docco.no_results_tpl = function(vars){
+      vars.msg = vars.msg || 'No results.' 
+      return '<div class="menu-item no-results">'+vars.msg+'</div>'; 
+    };
   </script>
 </body>
 </html>

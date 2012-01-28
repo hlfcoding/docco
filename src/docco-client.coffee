@@ -1,5 +1,24 @@
-# Docco Client adds some additional UI features to the docco output:
-# - Keyboard shortcuts: `g` to toggle nav mode, then `u` to show the jump menu.
+# Docco Client 
+# ============
+# Adds some additional, mainly-Webkit-dependent UI features to the docco output:
+#
+# Shortcut Keys:
+# --------------
+# - `t` - Push into another mode. First time toggles nav mode and show jump menu.
+#         Second time toggles search mode and focuses on search field.
+# - `up, down` - When in nav mode, select up and down the menu.
+# - `return` - Go to selected item.
+# - `esc` - Pop out of current mode, which updates the ui accordingly.
+#
+# UI Additions:
+# -------------
+# - Port to SCSS (see `docco.scss`).
+# - Nicer blockquotes.
+# - Horizontal rule (`<hr/> # ---`) styling.
+# - Webkit scrollbars.
+# - Jump menu:
+#   - Scrollability.
+#   - Integrated search and secondary navigation.
 
 #
 # Constants
@@ -29,7 +48,7 @@ mode = (constant, force=off) ->
   if constant? and (constant isnt _mode or force is on)
     _mode = constant
     $doc.trigger constant
-    # console.log "docco: mode changed to `#{constant}`"
+    # log "docco: mode changed to `#{constant}`"
   _mode
 
 #
@@ -37,14 +56,14 @@ mode = (constant, force=off) ->
 # ---------------------
 select = (increment=0) ->
   # 1. Select toroidally by toggling class.
-  start = @$selectableItems().filter('.selected').first().index()
+  start = @$selectedItem().index()
   if start is -1 then start = 0
-  # console.log "docco: select from start `#{start}`"
+  # log "docco: select from start `#{start}`"
   last = @$selectableItems().length-1
   index = start + increment
   if index < 0 then index = last
   else if index > last then index = 0
-  # console.log "docco: select at index `#{index}`"
+  # log "docco: select at index `#{index}`"
   @$selectableItems()
     .removeClass('selected')
     .eq(index).addClass('selected')
@@ -52,17 +71,16 @@ select = (increment=0) ->
   if increment is 0 then return
   if not @_hasScroll
     @_hasScroll = @$itemWrapper().innerHeight() > @innerHeight()
-    # console.log "docco: has-scroll is `#{@_hasScroll}`"
+    # log "docco: has-scroll is `#{@_hasScroll}`"
   if not @_itemHeight
     @_itemHeight = @$selectableItems().first().outerHeight() + 1
-    # console.log "docco: remembered item-height as `#{@_itemHeight}`"
+    # log "docco: remembered item-height as `#{@_itemHeight}`"
   if @_hasScroll is true
-    top = @$scroller.get(0).scrollTop
-    top += @_itemHeight * increment
+    top = @_itemHeight * index
     if index is last then top = @$itemWrapper().innerHeight() - @innerHeight()
     else if index is 0 then top = 0
     @$scroller.get(0).scrollTop = top
-    # console.log "docco: scrolling"
+    # log "docco: scrolling"
   return @
 
 search = (query) ->
@@ -85,8 +103,8 @@ search = (query) ->
   return @
 
 #
-# Procedures
-# ----------
+# Handlers
+# --------
 setup = () ->
   #
   # Read mode by default.
@@ -117,8 +135,8 @@ setup = () ->
     
     .bind 'keydown', 'return', (e) ->
       if mode() in [NAV_MODE, SEARCH_MODE]
-        $selected = $menu.$selectableItems().filter('.selected').first()
-        console.log "Going to selected `#{$selected}`"
+        $selected = $menu.$selectedItem()
+        log "Going to selected `#{$selected}`"
         if $selected.length then document.location = $selected.attr('href')
         e.preventDefault()
     
@@ -155,12 +173,12 @@ setup = () ->
     .on 'click', (e) ->
       e.stopPropagation()
     
-    .on EMPTY, (e, referrer) ->
+    .on EMPTY, (e, ref) ->
+      switch ref
+        when 'search' then if !!docco.no_results_tpl
+          $menu.$itemWrapper().empty().html docco.no_results_tpl()
       e.stopPropagation()
-      switch referrer
-        when 'search'
-          if docco.no_results_html
-            $menu.$itemWrapper().empty().html docco.no_results_html
+      e.stopPropagation()
     
   # Directory navigation works on top of search.
   $menu.$navItems.on 'click', (e) ->
@@ -208,7 +226,13 @@ setup = () ->
   # Initialize.
   $menu.select()
   
+
+#
+# Ready
+# -----
 $(() ->
+  #
+  # Setup menu instance.
   $menu = $ '#jump_wrapper'
   # Properties
   $menu.$itemWrapper = -> $menu.find '#jump_page'
@@ -223,6 +247,7 @@ $(() ->
       when SEARCH_MODE then if @$searchItems then @$searchItems
       else @$items
   
+  $menu.$selectedItem = -> @$selectableItems().filter('.selected').first()
   # - temp
   $menu.$searchItems = $()
   # Methods
@@ -240,10 +265,10 @@ $(() ->
     
     return @
   
-  # - override jQuery
+  # - Override jQuery.
   $menu.show = ->
     @css 'display', 'block'
-    # - Do menu height fix as needed.
+    # Do menu height fix as needed.
     if not @_didHeightFix
       if not @_heightFixHeight
         @_heightFixHeight ?= @$scroller.height() - @$searchWrapper.height() - 3
@@ -256,10 +281,13 @@ $(() ->
     @attr 'style', ''
     return @
   
+  # 
+  # Setup handlers, etc.
+  setup()
+  #
   # Debug
   if docco.debug is on 
     window.$menu = $menu
     logger = -> console.log.apply(console, arguments)
     window.log = log = if console.log.bind then console.log.bind(logger) else logger
-  setup()
 )
