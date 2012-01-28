@@ -40,7 +40,7 @@
     </div>
   <% } %>
     <div id="scroller">
-      <table cellpadding="0" cellspacing="0">
+      <table id="doc_page" cellpadding="0" cellspacing="0" data-path="<%= source %>">
         <thead>
           <tr>
             <th class="docs">
@@ -79,6 +79,15 @@
       vars.msg = vars.msg || 'No results.' 
       return '<div class="menu-item no-results">'+vars.msg+'</div>'; 
     };
+    docco.sticky_item_tpl = function(vars){
+      if (!vars.path || !vars.href) { return; }
+      return '<a class="source sticky" href="'+vars.href+'"'+
+          'title="'+vars.path+'" data-path="'+vars.path+'">'+
+          vars.path.replace(docco.r_path, '$1')+
+          '<span class="remove" title="Remove sticky">x</span>'+
+        '</a>';
+    };
+    docco.r_path = /^.*\/([^\/]+)\.[^.]+$/;
   </script>
 </body>
 </html>

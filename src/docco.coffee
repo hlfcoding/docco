@@ -139,6 +139,7 @@ generate_html = (source, sections) ->
     title: title 
     sections: sections 
     sources: sources 
+    source: source
     path: path 
     destination: destination
     dirs: sub_dirs

@@ -6,6 +6,10 @@
 # --------------
 # - `t` - Push into another mode. First time toggles nav mode and show jump menu.
 #         Second time toggles search mode and focuses on search field.
+# - `s` - Save sticky. When selecting on the menu, the selected item is saved; 
+#         if it's a sticky item, it's removed. Otherwise, the current file is
+#         saved. Items are saved to local storage.
+# - `ctrl+q` - Remove all stickies.
 # - `up, down` - When in nav mode, select up and down the menu.
 # - `return` - Go to selected item.
 # - `esc` - Pop out of current mode, which updates the ui accordingly.
@@ -28,6 +32,11 @@ READ_MODE = 'readmode.docco'
 NAV_MODE  = 'navmode.docco'
 SEARCH_MODE  = 'searchmode.docco'
 EMPTY = 'empty.docco'
+CREATE = 'create.docco'
+READ = 'read.docco'
+UPDATE = 'update.docco'
+DELETE = 'delete.docco'
+PURGE = 'purge.docco'
 #
 # Globals
 # -------
@@ -39,6 +48,7 @@ window.docco = docco
 # -------------
 _mode = null
 $doc = $(document)
+$page = null
 $menu = null
 log = $.noop
 #
@@ -102,6 +112,25 @@ search = (query) ->
     else @trigger EMPTY, ['search']
   return @
 
+# Main use: set or get item.
+# Occasional use: clear or get store.
+store = (key, json) ->
+  return if not window.localStorage or not window.JSON
+  if json?
+    try
+      log "json: #{JSON.stringify(json)}"
+      if json is off then localStorage.removeItem key
+      else localStorage.setItem key, JSON.stringify(json)
+    catch error
+      log error
+      return no
+  else if key?
+    if key is off
+      localStorage.clear()
+    else return $.parseJSON localStorage.getItem(key)
+  else return localStorage
+  return @
+
 #
 # Handlers
 # --------
@@ -121,6 +150,18 @@ setup = () ->
       if mode() not in [NAV_MODE, SEARCH_MODE] 
         mode NAV_MODE 
       else mode SEARCH_MODE, true
+      e.preventDefault()
+    
+    .bind 'keydown', 's', (e) ->
+      if mode() in [NAV_MODE, SEARCH_MODE] and ($selected = $menu.$selectedItem()).length
+        $menu.sticky (if $selected.is('.sticky') then DELETE else CREATE),
+          $selected.data('path')
+      else if mode() is READ_MODE
+        $menu.sticky CREATE, $page.data('path')
+      e.preventDefault()
+    
+    .bind 'keydown', 'ctrl+q', (e) ->
+      $menu.sticky PURGE
       e.preventDefault()
     
     .bind 'keydown', 'up', (e) ->
@@ -178,7 +219,35 @@ setup = () ->
         when 'search' then if !!docco.no_results_tpl
           $menu.$itemWrapper().empty().html docco.no_results_tpl()
       e.stopPropagation()
+    
+    .on CREATE, (e, ref, path) ->
+      switch ref
+        when 'sticky' then if !!docco.sticky_item_tpl
+          $menu.stick $(docco.sticky_item_tpl(
+            path: path
+            href: $menu.$items.filter("[data-path='#{path}']").first().attr('href')
+          ))
       e.stopPropagation()
+    
+    .on DELETE, (e, ref, path) ->
+      switch ref
+        when 'sticky' then $menu.unstick ".sticky[data-path='#{path}']:first"
+      e.stopPropagation()
+    
+    .on PURGE, (e, ref) ->
+      switch ref
+        when 'sticky' then $menu.unstick ".sticky"
+      e.stopPropagation()
+    
+    # Allow going back to nav mode.
+    .on 'click', 'a', (e) ->
+      return if mode() isnt SEARCH_MODE
+      e.preventDefault()
+      e.stopPropagation()
+    
+    .on 'click', '.sticky .remove', (e) ->
+      e.preventDefault()
+      $menu.sticky DELETE, $(@).closest('.sticky').data('path')
     
   # Directory navigation works on top of search.
   $menu.$navItems.on 'click', (e) ->
@@ -224,13 +293,26 @@ setup = () ->
   
   #
   # Initialize.
-  $menu.select()
+  stickies = $menu._store('sticky')
+  if not stickies?
+    $menu._store 'sticky', { stickies: [] }
+  else
+    html = []
+    $.each stickies.stickies, (i, path) ->
+      html.push docco.sticky_item_tpl 
+        path: path
+        href: $menu.$items.filter("[data-path='#{path}']").first().attr('href')
+    
+    $menu.stick $(html.join(''))
   
+  $menu.select()
 
 #
 # Ready
 # -----
 $(() ->
+  # Setup page instance.
+  $page = $ '#doc_page'
   #
   # Setup menu instance.
   $menu = $ '#jump_wrapper'
@@ -253,6 +335,37 @@ $(() ->
   # Methods
   $menu.select = select
   $menu.search = search
+  $menu._store = store
+  # - A simple sticky interface over `_store`.
+  $menu.sticky = (act=READ, id) ->
+    stickies = @_store('sticky').stickies
+    did = no
+    switch act
+      when CREATE then if id? and stickies.indexOf(id) is -1
+        stickies.push id
+        did = @_store 'sticky', { stickies: stickies }
+      when DELETE then if id? and (i = stickies.indexOf(id)) isnt -1
+        stickies.splice i, 1
+        did = @_store 'sticky', { stickies: stickies }
+      when PURGE
+        @_store 'sticky', { stickies: [] }
+        did = yes
+      when READ
+        return @_store 'sticky'
+    if did then @.trigger act, 
+      if id? then ['sticky', id] else ['sticky']
+    return @
+
+  # - Helper DOM method.
+  $menu.stick = ($items) ->
+    @$itemWrapper().prepend $items
+    @$items = @$items.add $items
+  
+  $menu.unstick = (filter) ->
+    @$itemWrapper().find(filter).remove()
+    @$items = @$items.not filter
+  
+  # - Helper DOM method.
   $menu.reset = ->
     @$searchField.blur()
     # Manipulate.

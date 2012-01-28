@@ -77,6 +77,18 @@ $prose-width: 525px;
   &.no-results {
     color: mix($ui-bg-color, $text-color, 50%);
   }
+  &.sticky {
+    font-weight: bold;
+    .remove {
+      @extend .close-button;
+      float: left;
+      margin-left: -$ui-gutter-size;
+      display: none;
+    }
+    &:hover .remove {
+      display: block;
+    }
+  }
 }
 
 /*--------------------- Layout and Typography ----------------------------*/
