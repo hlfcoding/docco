@@ -28,9 +28,9 @@
 # Constants
 # ---------
 # Mode constants are also the DOM event names.
-READ_MODE = 'readmode.docco'
-NAV_MODE  = 'navmode.docco'
-SEARCH_MODE  = 'searchmode.docco'
+READ = 'readmode.docco'
+NAV  = 'navmode.docco'
+SEARCH  = 'searchmode.docco'
 EMPTY = 'empty.docco'
 CREATE = 'create.docco'
 READ = 'read.docco'
@@ -137,7 +137,7 @@ store = (key, json) ->
 setup = () ->
   #
   # Read mode by default.
-  mode READ_MODE
+  mode READ
   #
   # Document bindings:
   # _Note_ Hotkeys plugin only works with `bind`.
@@ -147,16 +147,16 @@ setup = () ->
   $doc
     .bind 'keydown', 't', (e) ->
       # Trigger nav mode.
-      if mode() not in [NAV_MODE, SEARCH_MODE] 
-        mode NAV_MODE 
-      else mode SEARCH_MODE, true
+      if mode() not in [NAV, SEARCH] 
+        mode NAV 
+      else mode SEARCH, true
       e.preventDefault()
     
     .bind 'keydown', 's', (e) ->
-      if mode() in [NAV_MODE, SEARCH_MODE] and ($selected = $menu.$selectedItem()).length
+      if mode() in [NAV, SEARCH] and ($selected = $menu.$selectedItem()).length
         $menu.sticky (if $selected.is('.sticky') then DELETE else CREATE),
           $selected.data('path')
-      else if mode() is READ_MODE
+      else if mode() is READ
         $menu.sticky CREATE, $page.data('path')
       e.preventDefault()
     
@@ -165,17 +165,17 @@ setup = () ->
       e.preventDefault()
     
     .bind 'keydown', 'up', (e) ->
-      if mode() in [NAV_MODE, SEARCH_MODE]
+      if mode() in [NAV, SEARCH]
         $menu.select -1
         e.preventDefault()
     
     .bind 'keydown', 'down', (e) ->
-      if mode() in [NAV_MODE, SEARCH_MODE]
+      if mode() in [NAV, SEARCH]
         $menu.select 1
         e.preventDefault()
     
     .bind 'keydown', 'return', (e) ->
-      if mode() in [NAV_MODE, SEARCH_MODE]
+      if mode() in [NAV, SEARCH]
         $selected = $menu.$selectedItem()
         log "Going to selected `#{$selected}`"
         if $selected.length then document.location = $selected.attr('href')
@@ -183,29 +183,29 @@ setup = () ->
     
     .bind 'keydown', 'esc', (e) ->
       switch mode()
-        when NAV_MODE then mode READ_MODE
-        when SEARCH_MODE then mode NAV_MODE
+        when NAV then mode READ
+        when SEARCH then mode NAV
     
     .on
       click: () ->
         # Revert to read mode if click was not caught by children.
         switch mode()
-          when NAV_MODE then mode READ_MODE
-          when SEARCH_MODE then mode NAV_MODE
+          when NAV then mode READ
+          when SEARCH then mode NAV
 
-    .on READ_MODE, ->
+    .on READ, ->
       # When reverting to read mode:
       # - Hide the menu.
       $menu.hide()
     
-    .on NAV_MODE, ->
+    .on NAV, ->
       # When switching to nav mode:
       # - Reset the menu.
       $menu.reset()
       # - Show the menu.
       $menu.show()
     
-    .on SEARCH_MODE, ->
+    .on SEARCH, ->
       $menu.$searchField.focus()
     
   #
@@ -241,7 +241,7 @@ setup = () ->
     
     # Allow going back to nav mode.
     .on 'click', 'a', (e) ->
-      return if mode() isnt SEARCH_MODE
+      return if mode() isnt SEARCH
       e.preventDefault()
       e.stopPropagation()
     
@@ -270,8 +270,8 @@ setup = () ->
   $menu.$searchField.on 'focus blur', (e) ->
     $menu.$clearSearch.toggle !!$(@).val()
     switch e.type
-      when 'focus' then mode SEARCH_MODE
-      when 'blur' then if not $menu.$searchItems then mode NAV_MODE
+      when 'focus' then mode SEARCH
+      when 'blur' then if not $menu.$searchItems then mode NAV
   
   $menu.$clearSearch.click -> 
     $menu.$searchField.val ''
@@ -326,7 +326,7 @@ $(() ->
   $menu.$scroller = $menu.find '#jump_scroller'
   $menu.$selectableItems = -> 
     switch mode()
-      when SEARCH_MODE then if @$searchItems then @$searchItems
+      when SEARCH then if @$searchItems then @$searchItems
       else @$items
   
   $menu.$selectedItem = -> @$selectableItems().filter('.selected').first()
