@@ -55,7 +55,7 @@ log = $.noop
 # Global Methods
 # --------------
 mode = (constant, force=off) ->
-  if constant? and (constant isnt _mode or force is on)
+  if constant? and (constant not in [_mode, off] or force is on)
     prev = _mode
     _mode = constant
     $doc.trigger constant, [prev]
@@ -318,6 +318,10 @@ $ ->
   #
   # Setup menu instance.
   $menu = $ '#jump_wrapper'
+  # Don't run at all if there's no menu (single-source project).
+  return if not $menu.length
+  # Hide search if there aren't enough files.
+  SEARCH = off if $('a.source', $menu).length < 25
   f = ->
     # Properties
     @$itemWrapper = => @find '#jump_page'
