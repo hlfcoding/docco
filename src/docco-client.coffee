@@ -58,18 +58,18 @@ mode = (constant, force=off) ->
   if constant? and (constant isnt _mode or force is on)
     _mode = constant
     $doc.trigger constant
-    # log "docco: mode changed to `#{constant}`"
+    log "docco: mode changed to `#{constant}`"
   _mode
 
 stop = (e) -> e.stopPropagation()
 prevent = (e) -> e.preventDefault()
+
 #
 # JQuery Object Methods
 # ---------------------
 select = (increment=0) ->
   # 1. Select toroidally by toggling class.
   start = @$selectedItem().index()
-  if start is -1 then start = 0
   # log "docco: select from start `#{start}`"
   last = @$selectableItems().length-1
   index = start + increment
@@ -100,6 +100,7 @@ search = (query) ->
   results = 0
   if query?
     # Get search results.
+    @$searchItems.remove() if @$searchItems
     @$searchItems = @$items.filter(":contains('#{query}'), [data-path*='#{query}']")
       .clone()
     results = @$searchItems.length
@@ -185,9 +186,11 @@ setup = () ->
         prevent e
     
     .bind 'keydown', 'esc', (e) =>
-      switch mode()
+      if @$clearSearch.is ':visible' then @$clearSearch.click()
+      else switch mode()
         when NAV then mode READ
         when SEARCH then mode NAV
+      prevent e
     
     .on
       click: () =>
@@ -242,15 +245,9 @@ setup = () ->
         when 'sticky' then @unstick ".sticky"
       stop e
     
-    # Allow going back to nav mode.
-    .on 'click', 'a', (e) =>
-      return if mode() isnt SEARCH
-      prevent e
-      stop e
-    
     .on 'click', '.sticky .remove', (e) =>
-      prevent e
       @sticky DELETE, $(e.target).closest('.sticky').data('path')
+      prevent e
     
   # Directory navigation works on top of search.
   @$navItems.on 'click', (e) =>
@@ -258,10 +255,12 @@ setup = () ->
     prevent e
     return if $item.is '.selected'
     # Update UI and search.
+    mode SEARCH
     @$navItems.removeClass 'selected'
-    @search $item.addClass('selected').data('path')
+    $item.addClass 'selected'
     # Update field.
-    @$searchField.val($item.data('path')).blur()
+    @$searchField.val $item.data('path')
+    @$searchWrapper.submit()
   
   #
   # Search bindings
@@ -278,7 +277,7 @@ setup = () ->
   
   @$clearSearch.on 'click', =>
     @$searchField.val ''
-    @$searchItems
+    mode NAV
     @reset()
   
   #

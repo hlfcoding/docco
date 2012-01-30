@@ -136,7 +136,6 @@ hr {
 table td {
   border: 0;
   outline: 0;
-
 }
 
 td.docs, th.docs {
@@ -265,6 +264,7 @@ pre, tt, code {
         $border-color: $ui-bg-color + 2*$hx;
         @include border-radius(3px);
         @include single-inset(0, 1px, 4px, $b-3);
+        background: $ui-bg-color + $hx;
         outline: 0;
         padding: 3px 3%;
         border: 1px solid $border-color;
@@ -272,6 +272,7 @@ pre, tt, code {
         &:focus { 
           border-color: mix(invert($border-color), $border-color, 40%); 
           color: $text-color;
+          outline: 0;
         }
         width: 94%;
       }
