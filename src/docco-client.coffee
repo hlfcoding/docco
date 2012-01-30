@@ -56,8 +56,9 @@ log = $.noop
 # --------------
 mode = (constant, force=off) ->
   if constant? and (constant isnt _mode or force is on)
+    prev = _mode
     _mode = constant
-    $doc.trigger constant
+    $doc.trigger constant, [prev]
     log "docco: mode changed to `#{constant}`"
   _mode
 
@@ -152,7 +153,7 @@ setup = () ->
     .bind 'keydown', 't', (e) =>
       # Trigger nav mode.
       if mode() not in [NAV, SEARCH] 
-        mode NAV 
+        mode NAV, mode()
       else mode SEARCH, true
       prevent e
     
@@ -195,23 +196,21 @@ setup = () ->
     .on
       click: () =>
         # Revert to read mode if click was not caught by children.
-        switch mode()
-          when NAV then mode READ
-          when SEARCH then mode NAV
+        mode READ
       
-    .on READ, =>
+    .on READ, (e, prev) =>
       # When reverting to read mode:
       # - Hide the menu.
       @hide()
     
-    .on NAV, =>
+    .on NAV, (e, prev) =>
       # When switching to nav mode:
       # - Reset the menu.
-      @reset()
+      @reset() if not (prev? and prev is READ)
       # - Show the menu.
       @show()
     
-    .on SEARCH, =>
+    .on SEARCH, (e, prev) =>
       @$searchField.focus()
     
   #
@@ -372,6 +371,7 @@ $ ->
     # - Helper DOM method.
     @reset = =>
       @$searchField.blur()
+      @$navItems.removeClass 'selected'
       # Manipulate.
       @$itemWrapper().fadeOut 'fast', =>
         if @$searchItems
