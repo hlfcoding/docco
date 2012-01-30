@@ -412,5 +412,5 @@ $ ->
   if docco.debug is on 
     window.$menu = $menu
     logger = -> console.log.apply console, arguments
-    window.log = log = if console.log.bind then console.log.bind(logger) else logger
+    window.log = log = if console.log.bind then console.log.bind(console) else logger
 
