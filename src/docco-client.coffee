@@ -47,7 +47,7 @@ window.docco = docco
 # Scope Globals
 # -------------
 _mode = null
-$doc = $(document)
+$doc = $ document
 $page = null
 $menu = null
 log = $.noop
@@ -61,6 +61,8 @@ mode = (constant, force=off) ->
     # log "docco: mode changed to `#{constant}`"
   _mode
 
+stop = (e) -> e.stopPropagation()
+prevent = (e) -> e.preventDefault()
 #
 # JQuery Object Methods
 # ---------------------
@@ -132,12 +134,13 @@ store = (key, json) ->
   return @
 
 #
-# Handlers
-# --------
+# Setup menu handlers, etc.
+# -------------------------
 setup = () ->
   #
   # Read mode by default.
   mode READ
+  
   #
   # Document bindings:
   # _Note_ Hotkeys plugin only works with `bind`.
@@ -145,262 +148,266 @@ setup = () ->
   # 2. Other handlers.
   # 3. Mode handlers.
   $doc
-    .bind 'keydown', 't', (e) ->
+    .bind 'keydown', 't', (e) =>
       # Trigger nav mode.
       if mode() not in [NAV, SEARCH] 
         mode NAV 
       else mode SEARCH, true
-      e.preventDefault()
+      prevent e
     
-    .bind 'keydown', 's', (e) ->
-      if mode() in [NAV, SEARCH] and ($selected = $menu.$selectedItem()).length
-        $menu.sticky (if $selected.is('.sticky') then DELETE else CREATE),
+    .bind 'keydown', 's', (e) =>
+      if mode() in [NAV, SEARCH] and ($selected = @$selectedItem()).length
+        @sticky (if $selected.is('.sticky') then DELETE else CREATE),
           $selected.data('path')
       else if mode() is READ
-        $menu.sticky CREATE, $page.data('path')
-      e.preventDefault()
+        @sticky CREATE, $page.data('path')
+      prevent e
     
-    .bind 'keydown', 'ctrl+q', (e) ->
-      $menu.sticky PURGE
-      e.preventDefault()
+    .bind 'keydown', 'ctrl+q', (e) =>
+      @sticky PURGE
+      prevent e
     
-    .bind 'keydown', 'up', (e) ->
+    .bind 'keydown', 'up', (e) =>
       if mode() in [NAV, SEARCH]
-        $menu.select -1
-        e.preventDefault()
+        @select -1
+        prevent e
     
-    .bind 'keydown', 'down', (e) ->
+    .bind 'keydown', 'down', (e) =>
       if mode() in [NAV, SEARCH]
-        $menu.select 1
-        e.preventDefault()
+        @select 1
+        prevent e
     
-    .bind 'keydown', 'return', (e) ->
+    .bind 'keydown', 'return', (e) =>
       if mode() in [NAV, SEARCH]
-        $selected = $menu.$selectedItem()
+        $selected = @$selectedItem()
         log "Going to selected `#{$selected}`"
         if $selected.length then document.location = $selected.attr('href')
-        e.preventDefault()
+        prevent e
     
-    .bind 'keydown', 'esc', (e) ->
+    .bind 'keydown', 'esc', (e) =>
       switch mode()
         when NAV then mode READ
         when SEARCH then mode NAV
     
     .on
-      click: () ->
+      click: () =>
         # Revert to read mode if click was not caught by children.
         switch mode()
           when NAV then mode READ
           when SEARCH then mode NAV
-
-    .on READ, ->
+      
+    .on READ, =>
       # When reverting to read mode:
       # - Hide the menu.
-      $menu.hide()
+      @hide()
     
-    .on NAV, ->
+    .on NAV, =>
       # When switching to nav mode:
       # - Reset the menu.
-      $menu.reset()
+      @reset()
       # - Show the menu.
-      $menu.show()
+      @show()
     
-    .on SEARCH, ->
-      $menu.$searchField.focus()
+    .on SEARCH, =>
+      @$searchField.focus()
     
   #
   # Menu bindings
-  $menu
-    .on 'click', (e) ->
-      e.stopPropagation()
+  @
+    .on 'click', (e) =>
+      stop e
     
-    .on EMPTY, (e, ref) ->
+    .on EMPTY, (e, ref) =>
       switch ref
         when 'search' then if !!docco.no_results_tpl
-          $menu.$itemWrapper().empty().html docco.no_results_tpl()
-      e.stopPropagation()
+          @$itemWrapper().empty().html docco.no_results_tpl()
+      stop e
     
-    .on CREATE, (e, ref, path) ->
+    .on CREATE, (e, ref, path) =>
       switch ref
         when 'sticky' then if !!docco.sticky_item_tpl
-          $menu.stick $(docco.sticky_item_tpl(
+          @stick $(docco.sticky_item_tpl(
             path: path
-            href: $menu.$items.filter("[data-path='#{path}']").first().attr('href')
+            href: @$items.filter("[data-path='#{path}']").first().attr('href')
           ))
-      e.stopPropagation()
+      stop e
     
-    .on DELETE, (e, ref, path) ->
+    .on DELETE, (e, ref, path) =>
       switch ref
-        when 'sticky' then $menu.unstick ".sticky[data-path='#{path}']:first"
-      e.stopPropagation()
+        when 'sticky' then @unstick ".sticky[data-path='#{path}']:first"
+      stop e
     
-    .on PURGE, (e, ref) ->
+    .on PURGE, (e, ref) =>
       switch ref
-        when 'sticky' then $menu.unstick ".sticky"
-      e.stopPropagation()
+        when 'sticky' then @unstick ".sticky"
+      stop e
     
     # Allow going back to nav mode.
-    .on 'click', 'a', (e) ->
+    .on 'click', 'a', (e) =>
       return if mode() isnt SEARCH
-      e.preventDefault()
-      e.stopPropagation()
+      prevent e
+      stop e
     
-    .on 'click', '.sticky .remove', (e) ->
-      e.preventDefault()
-      $menu.sticky DELETE, $(@).closest('.sticky').data('path')
+    .on 'click', '.sticky .remove', (e) =>
+      prevent e
+      @sticky DELETE, $(e.target).closest('.sticky').data('path')
     
   # Directory navigation works on top of search.
-  $menu.$navItems.on 'click', (e) ->
-    $item = $ @
-    e.preventDefault()
+  @$navItems.on 'click', (e) =>
+    $item = $ e.target
+    prevent e
     return if $item.is '.selected'
     # Update UI and search.
-    $menu.$navItems.removeClass 'selected'
-    $menu.search $item.addClass('selected').data('path')
+    @$navItems.removeClass 'selected'
+    @search $item.addClass('selected').data('path')
     # Update field.
-    $menu.$searchField.val($item.data('path')).blur()
+    @$searchField.val($item.data('path')).blur()
   
   #
   # Search bindings
-  $menu.$searchWrapper.on 'submit', (e) ->
-    $menu.search()
-    $menu.$searchField.blur()
-    e.preventDefault()
+  @$searchWrapper.on 'submit', (e) =>
+    @search()
+    @$searchField.blur()
+    prevent e
   
-  $menu.$searchField.on 'focus blur', (e) ->
-    $menu.$clearSearch.toggle !!$(@).val()
+  @$searchField.on 'focus blur', (e) =>
+    @$clearSearch.toggle !!$(e.target).val()
     switch e.type
       when 'focus' then mode SEARCH
-      when 'blur' then if not $menu.$searchItems then mode NAV
+      when 'blur' then if not @$searchItems then mode NAV
   
-  $menu.$clearSearch.click -> 
-    $menu.$searchField.val ''
-    $menu.reset()
+  @$clearSearch.on 'click', =>
+    @$searchField.val ''
+    @$searchItems
+    @reset()
   
   #
   # Fix for height fix.
-  $(window).on 'resize', ->
+  $(window).on 'resize', =>
     # Throttle.
-    return if not $menu._didHeightFix
+    return if not @_didHeightFix
     # Reset height.
-    $menu.$scroller.css 'height', '100%'
-    $menu._heightFixHeight = null
-    $menu._didHeightFix = no
+    @$scroller.css 'height', '100%'
+    @_heightFixHeight = null
+    @_didHeightFix = no
     # Redraw as needed.
-    if $menu.is ':visible'
-      $menu.hide()
-      $menu.show()
+    if @is ':visible'
+      @hide()
+      @show()
   
   #
   # Initialize.
-  stickies = $menu._store('sticky')
+  stickies = @_store('sticky')
   if not stickies?
-    $menu._store 'sticky', { stickies: [] }
+    @_store 'sticky', { stickies: [] }
   else
     html = []
-    $.each stickies.stickies, (i, path) ->
+    $.each stickies.stickies, (i, path) =>
       html.push docco.sticky_item_tpl 
         path: path
-        href: $menu.$items.filter("[data-path='#{path}']").first().attr('href')
+        href: @$items.filter("[data-path='#{path}']").first().attr('href')
     
-    $menu.stick $(html.join(''))
+    @stick $(html.join(''))
   
-  $menu.select()
+  @select()
 
 #
 # Ready
 # -----
-$(() ->
+$ ->
   # Setup page instance.
   $page = $ '#doc_page'
   #
   # Setup menu instance.
   $menu = $ '#jump_wrapper'
-  # Properties
-  $menu.$itemWrapper = -> $menu.find '#jump_page'
-  $menu.$items = $menu.find 'a.source'
-  $menu.$navItems = $menu.find '#jump_dirs a.dir'
-  $menu.$searchWrapper = $menu.find '#jump_search_wrapper'
-  $menu.$searchField = $menu.find '#jump_search'
-  $menu.$clearSearch = $menu.$searchWrapper.find '#clear_search'
-  $menu.$scroller = $menu.find '#jump_scroller'
-  $menu.$selectableItems = -> 
-    switch mode()
-      when SEARCH then if @$searchItems then @$searchItems
-      else @$items
-  
-  $menu.$selectedItem = -> @$selectableItems().filter('.selected').first()
-  # - temp
-  $menu.$searchItems = $()
-  # Methods
-  $menu.select = select
-  $menu.search = search
-  $menu._store = store
-  # - A simple sticky interface over `_store`.
-  $menu.sticky = (act=READ, id) ->
-    stickies = @_store('sticky').stickies
-    did = no
-    switch act
-      when CREATE then if id? and stickies.indexOf(id) is -1
-        stickies.push id
-        did = @_store 'sticky', { stickies: stickies }
-      when DELETE then if id? and (i = stickies.indexOf(id)) isnt -1
-        stickies.splice i, 1
-        did = @_store 'sticky', { stickies: stickies }
-      when PURGE
-        @_store 'sticky', { stickies: [] }
-        did = yes
-      when READ
-        return @_store 'sticky'
-    if did then @.trigger act, 
-      if id? then ['sticky', id] else ['sticky']
-    return @
-
-  # - Helper DOM method.
-  $menu.stick = ($items) ->
-    @$itemWrapper().prepend $items
-    @$items = @$items.add $items
-  
-  $menu.unstick = (filter) ->
-    @$itemWrapper().find(filter).remove()
-    @$items = @$items.not filter
-  
-  # - Helper DOM method.
-  $menu.reset = ->
-    @$searchField.blur()
-    # Manipulate.
-    @$itemWrapper().fadeOut 'fast', =>
-      if @$searchItems
-        @$searchItems.remove()
-        @$searchItems = null
-        @_didHeightFix = no
-      @$itemWrapper().empty().append(@$items).fadeIn 'fast'
+  f = ->
+    # Properties
+    @$itemWrapper = => @find '#jump_page'
+    @$items = @find 'a.source'
+    @$navItems = @find '#jump_dirs a.dir'
+    @$searchWrapper = @find '#jump_search_wrapper'
+    @$searchField = @find '#jump_search'
+    @$clearSearch = @$searchWrapper.find '#clear_search'
+    @$scroller = @find '#jump_scroller'
+    @$selectableItems = =>
+      switch mode()
+        when SEARCH then if @$searchItems and @$searchItems.length then @$searchItems
+        else @$items
     
-    return @
-  
-  # - Override jQuery.
-  $menu.show = ->
-    @css 'display', 'block'
-    # Do menu height fix as needed.
-    if not @_didHeightFix
-      if not @_heightFixHeight
-        @_heightFixHeight ?= @$scroller.height() - @$searchWrapper.height() - 3
-      @$scroller.height @_heightFixHeight
-      @_didHeightFix = yes
-    return @
-  
-  $menu.hide = -> 
-    @css 'display', 'none'
-    @attr 'style', ''
-    return @
-  
-  # 
-  # Setup handlers, etc.
-  setup()
+    @$selectedItem = => @$selectableItems().filter('.selected').first()
+    # - temp
+    @$searchItems = $()
+    # Methods
+    @select = select
+    @search = search
+    @_store = store
+    # - A simple sticky interface over `_store`.
+    @sticky = (act=READ, id) =>
+      stickies = @_store('sticky').stickies
+      did = no
+      switch act
+        when CREATE then if id? and stickies.indexOf(id) is -1
+          stickies.push id
+          did = @_store 'sticky', { stickies: stickies }
+        when DELETE then if id? and (i = stickies.indexOf(id)) isnt -1
+          stickies.splice i, 1
+          did = @_store 'sticky', { stickies: stickies }
+        when PURGE
+          @_store 'sticky', { stickies: [] }
+          did = yes
+        when READ
+          return @_store 'sticky'
+      if did then @.trigger act,
+        if id? then ['sticky', id] else ['sticky']
+      return @
+    
+    # - Helper DOM method.
+    @stick = ($items) =>
+      @$itemWrapper().prepend $items
+      @$items = @$items.add $items
+    
+    @unstick = (filter) =>
+      @$itemWrapper().find(filter).remove()
+      @$items = @$items.not filter
+    
+    # - Helper DOM method.
+    @reset = =>
+      @$searchField.blur()
+      # Manipulate.
+      @$itemWrapper().fadeOut 'fast', =>
+        if @$searchItems
+          @$searchItems.remove()
+          @$searchItems = null
+          @_didHeightFix = no
+        @$itemWrapper().empty().append(@$items).fadeIn 'fast'
+      
+      return @
+    
+    # - Override jQuery.
+    @show = =>
+      @css 'display', 'block'
+      # Do menu height fix as needed.
+      if not @_didHeightFix
+        if not @_heightFixHeight
+          @_heightFixHeight ?= @$scroller.height() - @$searchWrapper.height() - 3
+        @$scroller.height @_heightFixHeight
+        @_didHeightFix = yes
+      return @
+    
+    @hide = =>
+      @css 'display', 'none'
+      @attr 'style', ''
+      return @
+    
+    #
+    # Setup handlers, etc.
+    setup.call @
+  f.call $menu
+
   #
   # Debug
   if docco.debug is on 
     window.$menu = $menu
-    logger = -> console.log.apply(console, arguments)
+    logger = -> console.log.apply console, arguments
     window.log = log = if console.log.bind then console.log.bind(logger) else logger
-)
+
