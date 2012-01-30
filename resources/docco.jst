@@ -9,34 +9,10 @@
 <body>
   <div id="container">
     <div id="background"></div>
-  <% if (sources.length > 1) { var i, l, l2, r, d; %>
+  <% if (sources.length > 1) { %>
     <div id="jump_to">
       Jump To &hellip;
-      <div id="jump_wrapper">
-        <form id="jump_search_wrapper" name="jump_search_form">
-          <input id="jump_search" name="jump_search" type="text" placeholder="Search..." tabindex="1">
-          <a id="clear_search" href="#" title="Clear">x</a>
-        </form>
-        <div id="jump_dirs">
-          <% for (i=0, l=dirs.length; i<l; i++) { %>
-            <a class="dir" href="#"
-               title="<%= dirs[i] %>" data-path="<%= dirs[i] %>">
-               <%= dirs[i].split('/').slice(-2).join(' / ') %>
-            </a>
-          <% } %>
-        </div>
-        <div id="jump_scroller">
-          <div id="jump_page">
-            <% r = /^.*\/([^\/]+)\.[^.]+$/; for (i=0, l=sources.length; i<l; i++) { %>
-              <% d = path.basename(destination(sources[i])); %>
-              <a class="source" href="<%= d %>"
-                 title="<%= sources[i] %>" data-path="<%= sources[i] %>">
-                <%= sources[i].replace(r, '$1') %>
-              </a>
-            <% } %>
-          </div>
-        </div>
-      </div>
+      <%= jump_menu_html %>
     </div>
   <% } %>
     <div id="scroller">
@@ -73,21 +49,23 @@
   </div>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
   <script src="docco-client.js"></script>
-  <script>
-    // Separate markup from behavior and presentation.
-    docco.no_results_tpl = function(vars){
-      vars.msg = vars.msg || 'No results.' 
-      return '<div class="menu-item no-results">'+vars.msg+'</div>'; 
-    };
-    docco.sticky_item_tpl = function(vars){
-      if (!vars.path || !vars.href) { return; }
-      return '<a class="source sticky" href="'+vars.href+'"'+
-          'title="'+vars.path+'" data-path="'+vars.path+'">'+
-          vars.path.replace(docco.r_path, '$1')+
-          '<span class="remove" title="Remove sticky">x</span>'+
-        '</a>';
-    };
-    docco.r_path = /^.*\/([^\/]+)\.[^.]+$/;
-  </script>
+  <% if (sources.length > 1) { %>
+    <script>
+      docco = window.docco || {};
+      docco.no_results_tpl = function(vars){
+        vars.msg = vars.msg || 'No results.';
+        return '<div class="menu-item no-results">'+vars.msg+'</div>'; 
+      };
+      docco.sticky_item_tpl = function(vars){
+        if (!vars.path || !vars.href) { return; }
+        return '<a class="source sticky" href="'+vars.href+'"'+
+            'title="'+vars.path+'" data-path="'+vars.path+'">'+
+            vars.path.replace(docco.r_path, '$1')+
+            '<span class="remove" title="Remove sticky">x</span>'+
+          '</a>';
+      };
+      docco.r_path = /^.*\/([^\/]+)\.[^.]+$/;
+    </script>
+  <% } %>
 </body>
 </html>

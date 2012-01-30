@@ -40,9 +40,9 @@ PURGE = 'purge.docco'
 #
 # Globals
 # -------
-docco =
-  debug: on
-window.docco = docco
+window.docco ?= {}
+docco.debug = on
+
 #
 # Scope Globals
 # -------------

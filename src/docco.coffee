@@ -56,11 +56,16 @@
 # up into comment/code sections, highlighting them for the appropriate language,
 # and merging them into an HTML template.
 generate_documentation = (source, callback) ->
+  jump_menu_html = docco_jump_template
+    sources: sources
+    path: path
+    destination: destination
+    dirs: sub_dirs
   fs.readFile source, "utf-8", (error, code) ->
     throw error if error
     sections = parse source, code
     highlight source, sections, ->
-      generate_html source, sections
+      generate_html source, sections, jump_menu_html
       callback()
 
 # Given a string of source code, parse out each comment and the code that
@@ -132,17 +137,15 @@ highlight = (source, sections, callback) ->
 # Once all of the code is finished highlighting, we can generate the HTML file
 # and write out the documentation. Pass the completed sections into the template
 # found in `resources/docco.jst`
-generate_html = (source, sections) ->
+generate_html = (source, sections, jump_menu_html) ->
   title = path.basename source
   dest  = destination source
   html  = docco_template 
     title: title 
     sections: sections 
-    sources: sources 
+    sources: sources
     source: source
-    path: path 
-    destination: destination
-    dirs: sub_dirs
+    jump_menu_html: jump_menu_html
   console.log "docco: #{source} -> #{dest}"
   fs.writeFile dest, html
 
@@ -233,8 +236,9 @@ get_directory_files = (dir, callback) ->
     if fstat.isDirectory() then get_directory_files fpath, callback
   
 
-# Create the template that we will use to generate the Docco HTML page.
-docco_template  = template fs.readFileSync(__dirname + '/../resources/docco.jst').toString()
+# Create the templates that we will use to generate the Docco HTML page.
+docco_template      = template fs.readFileSync(__dirname + '/../resources/docco.jst').toString()
+docco_jump_template = template fs.readFileSync(__dirname + '/../resources/docco-jump.jst').toString()
 
 # The CSS styles we'd like to apply to the documentation.
 docco_styles    = fs.readFileSync(__dirname + '/../resources/docco.css').toString()
