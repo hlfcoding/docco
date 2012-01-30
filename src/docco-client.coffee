@@ -220,7 +220,7 @@ setup = () ->
     .on EMPTY, (e, ref) =>
       switch ref
         when 'search' then if !!docco.no_results_tpl
-          @$itemWrapper().empty().html docco.no_results_tpl()
+          @$itemWrapper().empty().html docco.no_results_tpl({})
       stop e
     
     .on CREATE, (e, ref, path) =>
