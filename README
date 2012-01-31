@@ -23,3 +23,32 @@ Sample `docco.json` in project root:
     "dir_ceil": 4,
     "index_file": "ox3.js"
   }
+
+Docco Client 
+============
+Adds some additional, mainly-Webkit-dependent UI features to the docco output:
+
+Shortcut Keys:
+--------------
+- `t` - Push into another mode. First time toggles nav mode and show jump menu.
+        Second time toggles search mode and focuses on search field.
+- `r` - Navigate to the current file in the jump menu.
+- `j` - Navigate to and open the previous file in the jump menu.
+- `k` - Navigate to and open the next file in the jump menu.
+- `s` - Save sticky. When selecting on the menu, the selected item is saved; 
+        if it's a sticky item, it's removed. Otherwise, the current file is
+        saved. Items are saved to local storage.
+- `ctrl+q` - Remove all stickies.
+- `up, down` - When in nav mode, select up and down the menu.
+- `return` - Go to selected item.
+- `esc` - Pop out of current mode, which updates the ui accordingly.
+
+UI Additions:
+-------------
+- Port to SCSS (see `docco.scss`).
+- Nicer blockquotes.
+- Horizontal rule (`<hr/> # ---`) styling.
+- Webkit scrollbars.
+- Jump menu:
+  - Scrollability.
+  - Integrated search and secondary navigation.
