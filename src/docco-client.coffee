@@ -7,6 +7,8 @@
 # - `t` - Push into another mode. First time toggles nav mode and show jump menu.
 #         Second time toggles search mode and focuses on search field.
 # - `r` - Navigate to the current file in the jump menu.
+# - `j` - Navigate to and open the previous file in the jump menu.
+# - `k` - Navigate to and open the next file in the jump menu.
 # - `s` - Save sticky. When selecting on the menu, the selected item is saved; 
 #         if it's a sticky item, it's removed. Otherwise, the current file is
 #         saved. Items are saved to local storage.
@@ -66,6 +68,7 @@ mode = (constant, force=off) ->
 
 stop = (e) -> e.stopPropagation()
 prevent = (e) -> e.preventDefault()
+follow = ($link) -> if (href = $link.attr('href'))? then document.location = href
 
 #
 # JQuery Object Methods
@@ -97,6 +100,14 @@ select = (increment=0, refresh=off) ->
     @$scroller.get(0).scrollTop = top
     # log "docco: scrolling"
   return @
+
+navigate = (increment=1) ->
+  # Navigate toroidally.
+  last = @$selectableItems().length-1
+  index = @$pageItem().index() + increment
+  if index < 0 then index = last
+  else if index > last then index = 0
+  follow @$items.eq(index)
 
 search = (query) ->
   query ?= @$searchField.val()
@@ -179,6 +190,14 @@ setup = () ->
       @select increment, on
       prevent e
     
+    .bind 'keydown', 'j', (e) => 
+      @navigate -1
+      prevent e
+    
+    .bind 'keydown', 'k', (e) => 
+      @navigate 1
+      prevent e
+    
     .bind 'keydown', 's', (e) =>
       if mode() in [NAV, SEARCH] and ($selected = @$selectedItem()).length
         @sticky (if $selected.is('.sticky') then DELETE else CREATE),
@@ -205,7 +224,7 @@ setup = () ->
       if mode() in [NAV, SEARCH]
         $selected = @$selectedItem()
         log "Going to selected `#{$selected}`"
-        if $selected.length then document.location = $selected.attr('href')
+        if $selected.length then follow $selected
         prevent e
     
     .bind 'keydown', 'esc', (e) =>
@@ -364,6 +383,7 @@ $ ->
     @$searchItems = $()
     # Methods
     @select = select
+    @navigate = navigate
     @search = search
     @_store = store
     # - A simple sticky interface over `_store`.
