@@ -40,7 +40,7 @@ READ = 'read.docco'
 UPDATE = 'update.docco'
 DELETE = 'delete.docco'
 PURGE = 'purge.docco'
-SHOW = 'show.docco'
+REDRAW = 'redraw.docco'
 #
 # Globals
 # -------
@@ -179,7 +179,7 @@ setup = () ->
       # Catch and deal with exceptions, like if target isn't in search results.
       if to is -1 or from is -1
         if mode() is SEARCH
-          @one SHOW, =>
+          @one REDRAW, =>
             e = $.Event 'keydown'
             e.which = 82 # r
             $doc.trigger e
@@ -426,7 +426,7 @@ $ ->
           @$searchItems = null
           @_didHeightFix = no
         @$itemWrapper().empty().append(@$items).fadeIn 'fast', =>
-          @.trigger SHOW
+          @.trigger REDRAW
       
       return @
     
