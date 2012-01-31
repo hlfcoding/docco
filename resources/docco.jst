@@ -60,11 +60,10 @@
         if (!vars.path || !vars.href) { return; }
         return '<a class="source sticky" href="'+vars.href+'"'+
             'title="'+vars.path+'" data-path="'+vars.path+'">'+
-            vars.path.replace(docco.r_path, '$1')+
+            vars.path.split('/').pop().split('.').shift()+
             '<span class="remove" title="Remove sticky">x</span>'+
           '</a>';
       };
-      docco.r_path = /^.*\/([^\/]+)\.[^.]+$/;
     </script>
   <% } %>
 </body>
