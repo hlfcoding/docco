@@ -6,6 +6,7 @@
 # --------------
 # - `t` - Push into another mode. First time toggles nav mode and show jump menu.
 #         Second time toggles search mode and focuses on search field.
+# - `r` - Navigate to the current file in the jump menu.
 # - `s` - Save sticky. When selecting on the menu, the selected item is saved; 
 #         if it's a sticky item, it's removed. Otherwise, the current file is
 #         saved. Items are saved to local storage.
@@ -37,6 +38,7 @@ READ = 'read.docco'
 UPDATE = 'update.docco'
 DELETE = 'delete.docco'
 PURGE = 'purge.docco'
+SHOW = 'show.docco'
 #
 # Globals
 # -------
@@ -68,7 +70,7 @@ prevent = (e) -> e.preventDefault()
 #
 # JQuery Object Methods
 # ---------------------
-select = (increment=0) ->
+select = (increment=0, refresh=off) ->
   # 1. Select toroidally by toggling class.
   start = @$selectedItem().index()
   # log "docco: select from start `#{start}`"
@@ -81,7 +83,7 @@ select = (increment=0) ->
     .removeClass('selected')
     .eq(index).addClass('selected')
   # 2. Scroll toroidally as needed by updating scrollTop.
-  if increment is 0 then return
+  if increment is 0 and refresh is off then return
   if not @_hasScroll
     @_hasScroll = @$itemWrapper().innerHeight() > @innerHeight()
     # log "docco: has-scroll is `#{@_hasScroll}`"
@@ -155,6 +157,26 @@ setup = () ->
       if mode() not in [NAV, SEARCH] 
         mode NAV, mode()
       else mode SEARCH, true
+      prevent e
+    
+    .bind 'keydown', 'r', (e) =>
+      # Shift to navigation as needed.
+      if mode() not in [NAV, SEARCH] then mode NAV
+      # Adapt to and use select method.
+      to = @$pageItem().index()
+      from = @$selectedItem().index()
+      # Catch and deal with exceptions, like if target isn't in search results.
+      if to is -1 or from is -1
+        if mode() is SEARCH
+          @one SHOW, =>
+            e = $.Event 'keydown'
+            e.which = 82 # r
+            $doc.trigger e
+          mode NAV
+        return
+      increment = to - from
+      # log "Selecting current file at increment: #{increment}"
+      @select increment, on
       prevent e
     
     .bind 'keydown', 's', (e) =>
@@ -337,6 +359,7 @@ $ ->
         else @$items
     
     @$selectedItem = => @$selectableItems().filter('.selected').first()
+    @$pageItem = => @$items.filter("[data-path='#{$page.data('path')}']").first()
     # - temp
     @$searchItems = $()
     # Methods
@@ -382,7 +405,8 @@ $ ->
           @$searchItems.remove()
           @$searchItems = null
           @_didHeightFix = no
-        @$itemWrapper().empty().append(@$items).fadeIn 'fast'
+        @$itemWrapper().empty().append(@$items).fadeIn 'fast', =>
+          @.trigger SHOW
       
       return @
     
@@ -411,6 +435,7 @@ $ ->
   # Debug
   if docco.debug is on 
     window.$menu = $menu
+    window.$page = $page
     logger = -> console.log.apply console, arguments
     window.log = log = if console.log.bind then console.log.bind(console) else logger
 
