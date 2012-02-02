@@ -59,6 +59,8 @@ td.docs, th.docs { max-width: 450px; min-width: 450px; min-height: 5px; padding:
 
 .pilwrap { position: relative; }
 
+.pilwrap + ul { margin-top: 0; margin-bottom: 0; }
+
 .pilcrow { -moz-transition-property: opacity; -moz-transition-duration: 0.1s; -moz-transition-timing-function: ease-in-out; -o-transition-property: opacity; -o-transition-duration: 0.1s; -o-transition-timing-function: ease-in-out; -webkit-transition-property: opacity; -webkit-transition-duration: 0.1s; -webkit-transition-timing-function: ease-in-out; -ms-transition-property: opacity; -ms-transition-duration: 0.1s; -ms-transition-timing-function: ease-in-out; transition-property: opacity; transition-duration: 0.1s; transition-timing-function: ease-in-out; font: 12px Arial; text-decoration: none; color: #454545; position: absolute; top: 3px; left: -19px; padding: 1px 2px; opacity: 0; }
 td.docs:hover .pilcrow { opacity: 1; }
 
