@@ -12,8 +12,9 @@
 # - `s` - Save sticky. When selecting on the menu, the selected item is saved; 
 #         if it's a sticky item, it's removed. Otherwise, the current file is
 #         saved. Items are saved to local storage.
-# - `ctrl+q` - Remove all stickies.
+# - `ctrl+q` - Remove all stored data: stickies, text size, etc.
 # - `up, down` - When in nav mode, select up and down the menu.
+# - `ctrl+up, down` - Increase or decrease page text size.
 # - `return` - Go to selected item.
 # - `esc` - Pop out of current mode, which updates the ui accordingly.
 #
@@ -148,6 +149,21 @@ store = (key, json) ->
   else return localStorage
   return @
 
+textSize = (increment) ->
+  data = @_store('textSize') or { zoom: 1 }
+  if increment?
+    if increment is off
+      @css 'zoom', 0
+      @_store 'textSize', off
+    else
+      if increment is on then increment = 0
+      data.zoom = parseFloat(data.zoom) + increment
+      data.zoom = Math.max data.zoom, 0.5
+      data.zoom = Math.min data.zoom, 1.5
+      @css 'zoom', data.zoom.toFixed(1)
+      @_store 'textSize', data
+  return data
+
 #
 # Setup menu handlers, etc.
 # -------------------------
@@ -208,6 +224,7 @@ setup = () ->
     
     .bind 'keydown', 'ctrl+q', (e) =>
       @sticky PURGE
+      textSize off
       prevent e
     
     .bind 'keydown', 'up', (e) =>
@@ -233,6 +250,16 @@ setup = () ->
         when NAV then mode READ
         when SEARCH then mode NAV
       prevent e
+    
+    .bind 'keydown', 'ctrl+up', (e) =>
+      if mode() is READ
+        $page.textSize 0.1
+        prevent e
+    
+    .bind 'keydown', 'ctrl+down', (e) =>
+      if mode() is READ
+        $page.textSize -0.1
+        prevent e
     
     .on
       click: () =>
@@ -356,6 +383,9 @@ setup = () ->
 $ ->
   # Setup page instance.
   $page = $ '#doc_page'
+  $page.textSize = textSize
+  $page._store = store
+  $page.textSize on
   #
   # Setup menu instance.
   $menu = $ '#jump_wrapper'
