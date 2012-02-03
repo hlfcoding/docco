@@ -64,7 +64,6 @@ mode = (constant, force=no) ->
     prev = _mode
     _mode = constant
     $doc.trigger constant, [prev]
-    log "docco: mode changed to `#{constant}`"
   _mode
 
 stop = (e) -> e.stopPropagation()
@@ -77,12 +76,10 @@ follow = ($link) -> if (href = $link.attr('href'))? then document.location = hre
 select = (increment=0, refresh=no) ->
   # 1. Select toroidally by toggling class.
   start = @$selectedItem().index()
-  # log "docco: select from start `#{start}`"
   last = @$selectableItems().length-1
   index = start + increment
   if index < 0 then index = last
   else if index > last then index = 0
-  # log "docco: select at index `#{index}`"
   @$selectableItems()
     .removeClass('selected')
     .eq(index).addClass 'selected'
@@ -90,16 +87,13 @@ select = (increment=0, refresh=no) ->
   if increment is 0 and refresh is no then return
   if not @_hasScroll
     @_hasScroll = @$itemWrapper().innerHeight() > @innerHeight()
-    # log "docco: has-scroll is `#{@_hasScroll}`"
   if not @_itemHeight
     @_itemHeight = @$selectableItems().first().outerHeight() + 1
-    # log "docco: remembered item-height as `#{@_itemHeight}`"
   if @_hasScroll is true
     top = @_itemHeight * index
     if index is last then top = @$itemWrapper().innerHeight() - @innerHeight()
     else if index is 0 then top = 0
     @$scroller.get(0).scrollTop = top
-    # log "docco: scrolling"
   @
 
 navigate = (increment=1) ->
@@ -203,7 +197,6 @@ setup = () ->
           mode NAV
         return
       increment = to - from
-      # log "Selecting current file at increment: #{increment}"
       @select increment, yes
       prevent e
     
