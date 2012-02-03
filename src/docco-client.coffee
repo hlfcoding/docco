@@ -224,7 +224,7 @@ setup = () ->
     
     .bind 'keydown', 'ctrl+q', (e) =>
       @sticky PURGE
-      textSize off
+      $page.textSize off
       prevent e
     
     .bind 'keydown', 'up', (e) =>
