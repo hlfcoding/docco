@@ -59,8 +59,8 @@ log = $.noop
 #
 # Global Methods
 # --------------
-mode = (constant, force=off) ->
-  if constant? and (constant not in [_mode, off] or force is on)
+mode = (constant, force=no) ->
+  if constant? and (constant not in [_mode, off] or force is yes)
     prev = _mode
     _mode = constant
     $doc.trigger constant, [prev]
@@ -74,7 +74,7 @@ follow = ($link) -> if (href = $link.attr('href'))? then document.location = hre
 #
 # JQuery Object Methods
 # ---------------------
-select = (increment=0, refresh=off) ->
+select = (increment=0, refresh=no) ->
   # 1. Select toroidally by toggling class.
   start = @$selectedItem().index()
   # log "docco: select from start `#{start}`"
@@ -85,9 +85,9 @@ select = (increment=0, refresh=off) ->
   # log "docco: select at index `#{index}`"
   @$selectableItems()
     .removeClass('selected')
-    .eq(index).addClass('selected')
+    .eq(index).addClass 'selected'
   # 2. Scroll toroidally as needed by updating scrollTop.
-  if increment is 0 and refresh is off then return
+  if increment is 0 and refresh is no then return
   if not @_hasScroll
     @_hasScroll = @$itemWrapper().innerHeight() > @innerHeight()
     # log "docco: has-scroll is `#{@_hasScroll}`"
@@ -100,7 +100,7 @@ select = (increment=0, refresh=off) ->
     else if index is 0 then top = 0
     @$scroller.get(0).scrollTop = top
     # log "docco: scrolling"
-  return @
+  @
 
 navigate = (increment=1) ->
   # Navigate toroidally.
@@ -108,7 +108,7 @@ navigate = (increment=1) ->
   index = @$pageItem().index() + increment
   if index < 0 then index = last
   else if index > last then index = 0
-  follow @$items.eq(index)
+  follow @$items.eq index
 
 search = (query) ->
   query ?= @$searchField.val()
@@ -116,7 +116,8 @@ search = (query) ->
   if query?
     # Get search results.
     @$searchItems.remove() if @$searchItems
-    @$searchItems = @$items.filter(":contains('#{query}'), [data-path*='#{query}']")
+    @$searchItems = @$items
+      .filter(":contains('#{query}'), [data-path*='#{query}']")
       .clone()
     results = @$searchItems.length
     # Manipulate.
@@ -128,7 +129,7 @@ search = (query) ->
         @$itemWrapper().empty().append(@$searchItems).fadeIn 'fast'
       
     else @trigger EMPTY, ['search']
-  return @
+  @
 
 # Main use: set or get item.
 # Occasional use: clear or get store.
@@ -136,18 +137,18 @@ store = (key, json) ->
   return if not window.localStorage or not window.JSON
   if json?
     try
-      log "json: #{JSON.stringify(json)}"
+      log "json: #{JSON.stringify json}"
       if json is off then localStorage.removeItem key
-      else localStorage.setItem key, JSON.stringify(json)
+      else localStorage.setItem key, JSON.stringify json
     catch error
       log error
       return no
   else if key?
     if key is off
       localStorage.clear()
-    else return $.parseJSON localStorage.getItem(key)
+    else return $.parseJSON localStorage.getItem key
   else return localStorage
-  return @
+  @
 
 textSize = (increment) ->
   data = @_store('textSize') or { zoom: 1 }
@@ -157,12 +158,12 @@ textSize = (increment) ->
       @_store 'textSize', off
     else
       if increment is on then increment = 0
-      data.zoom = parseFloat(data.zoom) + increment
+      data.zoom = increment + parseFloat data.zoom
       data.zoom = Math.max data.zoom, 0.5
       data.zoom = Math.min data.zoom, 1.5
-      @css 'zoom', data.zoom.toFixed(1)
+      @css 'zoom', data.zoom.toFixed 1
       @_store 'textSize', data
-  return data
+  data
 
 #
 # Setup menu handlers, etc.
@@ -183,7 +184,7 @@ setup = () ->
       # Trigger nav mode.
       if mode() not in [NAV, SEARCH] 
         mode NAV, mode()
-      else mode SEARCH, true
+      else mode SEARCH, yes
       prevent e
     
     .bind 'keydown', 'r', (e) =>
@@ -203,7 +204,7 @@ setup = () ->
         return
       increment = to - from
       # log "Selecting current file at increment: #{increment}"
-      @select increment, on
+      @select increment, yes
       prevent e
     
     .bind 'keydown', 'j', (e) => 
@@ -217,9 +218,9 @@ setup = () ->
     .bind 'keydown', 's', (e) =>
       if mode() in [NAV, SEARCH] and ($selected = @$selectedItem()).length
         @sticky (if $selected.is('.sticky') then DELETE else CREATE),
-          $selected.data('path')
+                $selected.data 'path'
       else if mode() is READ
-        @sticky CREATE, $page.data('path')
+        @sticky CREATE, $page.data 'path'
       prevent e
     
     .bind 'keydown', 'ctrl+q', (e) =>
@@ -290,16 +291,15 @@ setup = () ->
     .on EMPTY, (e, ref) =>
       switch ref
         when 'search' then if !!docco.no_results_tpl
-          @$itemWrapper().empty().html docco.no_results_tpl({})
+          @$itemWrapper().empty().html docco.no_results_tpl {}
       stop e
     
     .on CREATE, (e, ref, path) =>
       switch ref
         when 'sticky' then if !!docco.sticky_item_tpl
-          @stick $(docco.sticky_item_tpl(
+          @stick $ docco.sticky_item_tpl
             path: path
-            href: @$items.filter("[data-path='#{path}']").first().attr('href')
-          ))
+            href: @$items.filter("[data-path='#{path}']").first().attr 'href'
       stop e
     
     .on DELETE, (e, ref, path) =>
@@ -313,7 +313,7 @@ setup = () ->
       stop e
     
     .on 'click', '.sticky .remove', (e) =>
-      @sticky DELETE, $(e.target).closest('.sticky').data('path')
+      @sticky DELETE, $(e.target).closest('.sticky').data 'path'
       prevent e
     
   # Directory navigation works on top of search.
@@ -326,7 +326,7 @@ setup = () ->
     @$navItems.removeClass 'selected'
     $item.addClass 'selected'
     # Update field.
-    @$searchField.val $item.data('path')
+    @$searchField.val $item.data 'path'
     @$searchWrapper.submit()
   
   #
@@ -363,17 +363,15 @@ setup = () ->
   
   #
   # Initialize.
-  stickies = @_store('sticky')
+  stickies = @_store 'sticky'
   if not stickies?
     @_store 'sticky', { stickies: [] }
   else
-    html = []
-    $.each stickies.stickies, (i, path) =>
-      html.push docco.sticky_item_tpl 
+    html = for path, i in stickies.stickies
+      docco.sticky_item_tpl 
         path: path
         href: @$items.filter("[data-path='#{path}']").first().attr('href')
-    
-    @stick $(html.join(''))
+    @stick $ html.join ''
   
   @select()
 
@@ -434,7 +432,7 @@ $ ->
           return @_store 'sticky'
       if did then @.trigger act,
         if id? then ['sticky', id] else ['sticky']
-      return @
+      @
     
     # - Helper DOM method.
     @stick = ($items) =>
@@ -458,7 +456,7 @@ $ ->
         @$itemWrapper().empty().append(@$items).fadeIn 'fast', =>
           @.trigger REDRAW
       
-      return @
+      @
     
     # - Override jQuery.
     @show = =>
@@ -469,12 +467,12 @@ $ ->
           @_heightFixHeight ?= @$scroller.height() - @$searchWrapper.height() - 3
         @$scroller.height @_heightFixHeight
         @_didHeightFix = yes
-      return @
+      @
     
     @hide = =>
       @css 'display', 'none'
       @attr 'style', ''
-      return @
+      @
     
     #
     # Setup handlers, etc.
