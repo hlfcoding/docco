@@ -146,7 +146,7 @@ generate_html = (source, sections, jump_menu_html) ->
     sources: sources
     source: source
     jump_menu_html: jump_menu_html
-  console.log "docco: #{source} -> #{dest}"
+  if not conf.quiet then console.log "docco: #{source} -> #{dest}"
   fs.writeFile dest, html
 
 #### Helpers & Setup
@@ -291,6 +291,8 @@ while args.length
     #    docco --recursive .*\.js .*\.coffee
     # 
     when '--recursive' then conf.recursive = true
+    # `--quiet` will omit certain log statements.
+    when '--quiet' then conf.quiet = true
     # Additional args can be set via a `docco.json` in the cwd.
     else sources.push arg
 
@@ -323,7 +325,7 @@ walk = (full_path, callback, _level=0) ->
     stat = fs.statSync fp
     if stat.isFile() and type_pattern.test(p) and not file_pattern.test(p) then sources.push p 
     else if stat.isDirectory() and not dir_pattern.test(p) then walk.call this, fp, callback, _level
-    else console.log "docco: skipped (#{skipped++}) #{p}"
+    else if not conf.quiet then console.log "docco: skipped (#{skipped++}) #{p}"
   skipped
 
 # Run the walker script as needed.
